@@ -62,6 +62,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 			// 게시글 제목, 사진
 			String postTitle = null;
 			String postImageUrl = null;
+			String postRegion = null;
 
 			if (room.getPostType() == PostType.LOST) {
 				var lost = queryFactory.selectFrom(qLost)
@@ -70,6 +71,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				if (lost != null) {
 					postTitle = lost.getTitle();
 					postImageUrl = lost.getAiImage();
+					postRegion = lost.getLostRegion();
 				}
 			} else {
 				var found = queryFactory.selectFrom(qFound)
@@ -78,6 +80,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				if (found != null) {
 					postTitle = found.getTitle();
 					postImageUrl = found.getAiImage();
+					postRegion = found.getFoundRegion();
 				}
 			}
 
@@ -92,6 +95,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.postType(room.getPostType())
 				.postTitle(postTitle)
 				.postImageUrl(postImageUrl)
+				.postRegion(postRegion)
 				.build();
 		}).toList();
 	}

@@ -36,14 +36,5 @@ public class ChatRoom extends BaseEntity {
     @Column(name = "post_id", nullable = false)
     private Long postId;         // 해당 글 PK
 
-    public void setMembersOrdered(Member a, Member b) {
-        if (a.getId() <= b.getId()) {
-            this.member1 = a;
-            this.member2 = b;
-        } else {
-            this.member1 = b;
-            this.member2 = a;
-        }
-    }
 
 }
