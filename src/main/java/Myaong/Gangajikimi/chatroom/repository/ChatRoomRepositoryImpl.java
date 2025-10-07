@@ -70,7 +70,12 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 					.fetchOne();
 				if (lost != null) {
 					postTitle = lost.getTitle();
-					postImageUrl = lost.getAiImage();
+					if (lost.getAiImage() != null) {
+						postImageUrl = lost.getAiImage();
+					}
+					else {
+						postImageUrl = lost.firstRealImage(lost.getRealImage());
+					}
 					postRegion = lost.getLostRegion();
 				}
 			} else {
@@ -79,7 +84,12 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 					.fetchOne();
 				if (found != null) {
 					postTitle = found.getTitle();
-					postImageUrl = found.getAiImage();
+					if (found.getAiImage() != null) {
+						postImageUrl = found.getAiImage();
+					}
+					else {
+						postImageUrl = found.firstRealImage(found.getRealImage());
+					}
 					postRegion = found.getFoundRegion();
 				}
 			}

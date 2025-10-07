@@ -169,5 +169,12 @@ public class PostFound extends BaseEntity {
     public void updateStatus(DogStatus status) {
         this.status = status;
     }
+
+    /**
+     * 사용자가 첨부한 사진 중 첫 번째 사진을 반환
+    * */
+    public String firstRealImage(List<String> realImage){
+        return realImage.get(0);
+    }
 }
 
