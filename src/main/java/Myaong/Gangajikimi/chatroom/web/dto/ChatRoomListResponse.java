@@ -25,4 +25,6 @@ public class ChatRoomListResponse {
 	private PostType postType;
 	private String postTitle;
 	private String postImageUrl;
+	private String postRegion;
+
 }
