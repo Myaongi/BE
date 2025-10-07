@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import jakarta.validation.Valid;
 
@@ -81,4 +82,15 @@ public interface SightCardControllerDocs {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @org.springframework.web.bind.annotation.RequestBody SightCardDto.CreateRequest req
 	);
+
+	@Operation(
+		summary = "채팅방의 발견카드 조회",
+		description = "해당 채팅방에 연결된 발견카드를 반환합니다."
+	)
+		// 필요하면 ApiResponse 예시도 추가 가능
+	ResponseEntity<GlobalResponse> getSightCardByChatRoom(
+		@AuthenticationPrincipal CustomUserDetails user,
+		@PathVariable("chatRoomId") Long chatRoomId
+	);
 }
+
