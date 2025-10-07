@@ -29,4 +29,15 @@ public class SightCardController implements SightCardControllerDocs {
 		var response = sightCardService.createWithChat(reporterId, req);
 		return GlobalResponse.onSuccess(SuccessCode.OK, response);
 	}
+
+	@GetMapping("/{chatRoomId}")
+	@Override
+	public ResponseEntity<GlobalResponse> getSightCardByChatRoom(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long chatRoomId
+	) {
+		Long participatorId = userDetails.getId();
+		var result = sightCardService.getByChatRoom(chatRoomId, participatorId);
+		return GlobalResponse.onSuccess(SuccessCode.OK, result);
+	}
 }
