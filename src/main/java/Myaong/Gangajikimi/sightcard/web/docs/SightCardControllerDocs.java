@@ -59,15 +59,14 @@ public interface SightCardControllerDocs {
                       "code": "COMMON200",
                       "message": "SUCCESS!",
                       "result": {
-                        "sightCardId": 1,
-                        "postLostId": 1,
-                        "postMemberId": 1,
-						"foundDate": "2025.10.07",
-						"foundTime": "14:30",
-						"foundPlace": "서울특별시 서초구"
-                        "latitude": 37.4979,
-                        "longitude": 127.0276,
-                      }
+                      "sightCardId": 1,
+                      "postLostId": 1,
+                      "postMemberId": 1,
+				      "foundDate": "2025.10.07",
+					  "foundTime": "14:30",
+					  "foundPlace": "서울특별시 서초구"
+                      "latitude": 37.4979,
+                      "longitude": 127.0276,
                     }
                     """
 				)
