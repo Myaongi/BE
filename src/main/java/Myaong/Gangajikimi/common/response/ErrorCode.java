@@ -32,6 +32,12 @@ public enum ErrorCode {
     //CHATROOM
     CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "CHATROOM400", "해당 채팅방은 존재하지 않습니다."),
     NOT_SAME_PEOPLE(HttpStatus.BAD_REQUEST, "CHATROOM4001", "본인과의 채팅은 생성할 수 없습니다."),
+    POST_NO_AUTH(HttpStatus.BAD_REQUEST, "CHATROOM4002", "해당 채팅방에 권한이 없습니다."),
+
+    //SIGHT_CARD
+    ALREADY_EXIST_CARD(HttpStatus.BAD_REQUEST, "SIGHTCARD400", "이미 발견카드가 존재합니다."),
+    CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "SIGHTCARD4001", "발견카드가 존재하지 않습니다."),
+
 
     //POST
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST400", "존재하지 않는 게시글입니다."),
