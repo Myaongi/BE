@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.sightcard.web.dto;
 
 import java.util.List;
 
+import Myaong.Gangajikimi.chatroom.web.dto.ChatRoomResponse;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -42,5 +43,13 @@ public class SightCardDto {
 
 		private Double longitude;  // 위도
 		private Double latitude;   // 경도
+
+
+	}
+	/** 발견카드 생성 + 채팅방 생성/재사용 응답 */
+	@Getter @Builder
+	public static class CreateWithChatResponse {
+		private SightCardResponse sightCard;
+		private ChatRoomResponse chatRoom;
 	}
 }

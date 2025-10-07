@@ -54,26 +54,30 @@ public interface SightCardControllerDocs {
 					name = "예시 응답",
 					summary = "성공 응답 예시",
 					value = """
-                    {
-                      "isSuccess": true,
-                      "code": "COMMON200",
-                      "message": "SUCCESS!",
-                      "result": {
-                      "sightCardId": 1,
-                      "postLostId": 1,
-                      "postMemberId": 1,
-				      "foundDate": "2025.10.07",
-					  "foundTime": "14:30",
-					  "foundPlace": "서울특별시 서초구"
-                      "latitude": 37.4979,
-                      "longitude": 127.0276,
-                    }
+						"result": {
+						     "sightCard": {
+						       "sightCardId": 41,
+						       "postLostId": 16,
+						       "reporterId": 7,
+						       "foundDate": "2025.09.18",
+						       "foundTime": "03:56",
+						       "foundPlace": "문정동 로데오앞",
+						       "longitude": 127.12203,
+						       "latitude": 37.48421
+						     },
+						     "chatRoom": {
+						       "chatroomId": 3,
+						       "member1Id": 2,
+						       "member2Id": 7,
+						       "createdAt": "2025-10-07T22:44:31.509185"
+						     }
+						   }
                     """
 				)
 			}
 		)
 	)
-	ResponseEntity<GlobalResponse> createSightCard(
+	ResponseEntity<GlobalResponse> createSightCardWithChat(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @org.springframework.web.bind.annotation.RequestBody SightCardDto.CreateRequest req
 	);

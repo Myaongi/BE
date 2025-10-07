@@ -1,6 +1,10 @@
 // src/main/java/Myaong/Gangajikimi/sightcard/service/SightCardService.java
 package Myaong.Gangajikimi.sightcard.service;
 
+import Myaong.Gangajikimi.chatroom.service.ChatRoomService;
+import Myaong.Gangajikimi.chatroom.web.dto.ChatRoomCreateRequest;
+import Myaong.Gangajikimi.chatroom.web.dto.ChatRoomResponse;
+import Myaong.Gangajikimi.common.enums.PostType;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
@@ -30,14 +34,23 @@ public class SightCardService {
 	private final KakaoApiService kakaoApiService;
 	private final SightCardConverter sightCardConverter;
 
+	// 채팅방 생성/재사용용
+	private final ChatRoomService chatRoomService;
+
+	/** 발견카드 저장 + 채팅방 생성/재사용까지 한 번에 */
 	@Transactional
-	public SightCardDto.SightCardResponse create(Long reporterId, SightCardDto.CreateRequest req) {
+	public SightCardDto.CreateWithChatResponse createWithChat (Long reporterId, SightCardDto.CreateRequest req) {
 		// 1) 기본 조회
 		PostLost postLost = postLostRepository.findById(req.getPostLostId())
 			.orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
 
 		Member reporter = memberRepository.findById(reporterId)
 			.orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+		// 자기 글에는 금지 (정책에 맞는 ErrorCode로 교체 가능)
+		if (postLost.getMember().getId().equals(reporter.getId())) {
+			throw new GeneralException(ErrorCode.NOT_SAME_PEOPLE);
+		}
 
 		// 2) 날짜/시간 파싱
 		LocalDate date = toLocalDate(req.getDate());
@@ -59,7 +72,19 @@ public class SightCardService {
 				.build()
 		);
 
-		return sightCardConverter.toCreateResponse(saved);
+		// 5) 채팅방 생성/재사용
+		ChatRoomCreateRequest roomReq = ChatRoomCreateRequest.builder()
+			// ChatRoomService 시그니처: (req, memberId)
+			// -> memberId = reporter(요청자), req.memberId = 상대(분실글 작성자)
+			.memberId(postLost.getMember().getId())
+			.postType(PostType.LOST)
+			.postId(postLost.getId())
+			.build();
+
+		ChatRoomResponse room = chatRoomService.createChatRoom(roomReq, reporterId);
+
+		// 6) 통합 응답
+		return sightCardConverter.toCreateWithChatResponse(saved, room);
 	}
 
 	private LocalDate toLocalDate(List<Integer> arr) {

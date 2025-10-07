@@ -21,12 +21,12 @@ public class SightCardController implements SightCardControllerDocs {
 
 	@PostMapping
 	@Override
-	public ResponseEntity<GlobalResponse> createSightCard(
+	public ResponseEntity<GlobalResponse> createSightCardWithChat(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody SightCardDto.CreateRequest req
 	) {
 		Long reporterId = userDetails.getId();
-		var response = sightCardService.create(reporterId, req);
+		var response = sightCardService.createWithChat(reporterId, req);
 		return GlobalResponse.onSuccess(SuccessCode.OK, response);
 	}
 }
