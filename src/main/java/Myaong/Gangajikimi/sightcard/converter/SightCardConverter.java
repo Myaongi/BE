@@ -16,10 +16,12 @@ public class SightCardConverter {
 		return SightCardDto.SightCardResponse.builder()
 			.sightCardId(sightCard.getId())
 			.postLostId(sightCard.getPostLost().getId())
-			.reporterId(sightCard.getReporter().getId())
+			.postMemberId(sightCard.getPostMemberId())
 			.foundDate(sightCard.getFoundDate().format(DATE_FMT))
 			.foundTime(sightCard.getFoundTime().format(TIME_FMT))
 			.foundPlace(sightCard.getFoundPlace())
+			.longitude(sightCard.getLongitude())
+			.latitude(sightCard.getLatitude())
 			.build();
 	}
 }

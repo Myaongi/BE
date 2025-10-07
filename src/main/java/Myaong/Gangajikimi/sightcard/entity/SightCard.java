@@ -54,4 +54,9 @@ public class SightCard extends BaseEntity {
 
 	@Column(length = 300, nullable = false)
 	private String foundPlace; // 카카오 역지오코딩 결과
+
+	// 게시글 작성자 id 반환 메서드
+	public Long getPostMemberId() {
+		return postLost.getMember().getId();
+	}
 }

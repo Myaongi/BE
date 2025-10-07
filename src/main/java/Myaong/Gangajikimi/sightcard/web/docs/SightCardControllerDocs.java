@@ -16,8 +16,30 @@ public interface SightCardControllerDocs {
 
 	@Operation(
 		summary = "발견카드 생성",
-		description = "분실 게시글에 대한 발견카드를 DB에 저장하고, 화면 표기용 데이터로 반환합니다."
-
+		description = """
+            분실 게시글에 대한 발견카드를 DB에 저장하고, 화면 표기용 데이터로 반환합니다.
+   
+            **작성 예시(data)**:
+            ```json
+			{
+			  "postLostId": 1,
+			  "date": [
+			    2025,
+			    10,
+			    7
+			  ],
+			  "time": [
+			    2025,
+			    10,
+			    7,
+			    14,
+			    30
+			  ],
+			  "longitude": 127.0276,
+			  "latitude": 37.4979
+			}
+            ```
+            """
 	)
 	@ApiResponse(responseCode = "200", description = "성공적으로 생성됨")
 	ResponseEntity<GlobalResponse> createSightCard(

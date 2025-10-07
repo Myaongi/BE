@@ -33,12 +33,14 @@ public class SightCardDto {
 	public static class SightCardResponse {
 		private Long sightCardId; // 발견 카드 id
 		private Long postLostId; // 분실게시글 id
-		private Long reporterId; // 발견카드 작성자 id
+		private Long postMemberId; // 분실게시글 작성자 id
 
 		// 프론트 표시용 포맷
 		private String foundDate;   // yyyy.MM.dd
 		private String foundTime;   // HH:mm
 		private String foundPlace;  // 행정지역/지번 요약
-		
+
+		private Double longitude;  // 위도
+		private Double latitude;   // 경도
 	}
 }
