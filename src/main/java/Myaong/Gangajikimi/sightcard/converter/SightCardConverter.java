@@ -1,5 +1,6 @@
 package Myaong.Gangajikimi.sightcard.converter;
 
+import Myaong.Gangajikimi.chatroom.web.dto.ChatRoomResponse;
 import Myaong.Gangajikimi.sightcard.entity.SightCard;
 import Myaong.Gangajikimi.sightcard.web.dto.SightCardDto;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,15 @@ public class SightCardConverter {
 			.foundPlace(sightCard.getFoundPlace())
 			.longitude(sightCard.getLongitude())
 			.latitude(sightCard.getLatitude())
+			.build();
+	}
+
+	public SightCardDto.CreateWithChatResponse toCreateWithChatResponse(
+		SightCard e, ChatRoomResponse room
+	) {
+		return SightCardDto.CreateWithChatResponse.builder()
+			.sightCard(toCreateResponse(e))
+			.chatRoom(room)
 			.build();
 	}
 }
