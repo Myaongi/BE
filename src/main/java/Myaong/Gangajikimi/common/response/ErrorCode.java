@@ -38,6 +38,9 @@ public enum ErrorCode {
     ALREADY_EXIST_CARD(HttpStatus.BAD_REQUEST, "SIGHTCARD400", "이미 발견카드가 존재합니다."),
     CARD_NOT_FOUND(HttpStatus.NOT_FOUND, "SIGHTCARD4001", "발견카드가 존재하지 않습니다."),
 
+    //NOTIFICATION
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION400", "존재하지 않는 알림입니다."),
+    CANNOT_READ_NOTIFICATION(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "본인의 알림만 읽음 처리할 수 있습니다."),
 
     //POST
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST400", "존재하지 않는 게시글입니다."),

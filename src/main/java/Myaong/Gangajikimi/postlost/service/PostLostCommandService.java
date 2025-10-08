@@ -8,6 +8,7 @@ import Myaong.Gangajikimi.common.enums.Role;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.member.entity.Member;
+import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostRequest;
@@ -35,6 +36,7 @@ public class PostLostCommandService {
     private final DogTypeService dogTypeService;
     private final S3Service s3Service;
     private final KakaoApiService kakaoApiService;
+    private final NotificationService notificationService;
     private static final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     public PostLost postPostLost(PostLostRequest request, Member member, List<MultipartFile> images){
@@ -73,6 +75,16 @@ public class PostLostCommandService {
 
         // 업로드된 이미지 keyNames로 PostLost 업데이트
         savedPostLost.updateImages(imageKeyNames);
+
+        /**
+         * 반경 3km 유저들에게 알림 전송
+         * */
+        notificationService.notifyNearbyUsers(
+            savedPostLost.getId(),
+            request.getLostLatitude(),
+            request.getLostLongitude(),
+            member.getId()
+        );
 
         return savedPostLost;
     }

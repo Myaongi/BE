@@ -5,13 +5,16 @@ import Myaong.Gangajikimi.memberlocation.web.dto.MemberLocationDto;
 
 import java.time.LocalDateTime;
 
+import org.locationtech.jts.geom.Point;
+
 public class MemberLocationConverter {
 
-	public static MemberLocation toEntity(Long memberId, Double latitude, Double longitude) {
+	public static MemberLocation toEntity(Long memberId, Double latitude, Double longitude, Point point) {
 		return MemberLocation.builder()
 			.memberId(memberId)
 			.latitude(latitude)
 			.longitude(longitude)
+			.geom(point)
 			.build();
 	}
 
