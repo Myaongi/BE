@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.postlost.service;
 
 import Myaong.Gangajikimi.common.enums.DogGender;
 import Myaong.Gangajikimi.common.enums.DogStatus;
+import Myaong.Gangajikimi.common.enums.PostType;
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 import Myaong.Gangajikimi.dogtype.service.DogTypeService;
 import Myaong.Gangajikimi.common.enums.Role;
@@ -83,7 +84,8 @@ public class PostLostCommandService {
             savedPostLost.getId(),
             request.getLostLatitude(),
             request.getLostLongitude(),
-            member.getId()
+            member.getId(),
+            PostType.LOST
         );
 
         return savedPostLost;

@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.notification.entity;
 
 import Myaong.Gangajikimi.common.BaseEntity;
 import Myaong.Gangajikimi.common.enums.NotificationType;
+import Myaong.Gangajikimi.common.enums.PostType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -38,4 +39,9 @@ public class Notification extends BaseEntity {
 	private Long postId;
 
 	private Long chatRoomId;
+
+	// ✅ 추가: 해당 알림이 가리키는 게시글의 타입(LOST/FOUND)
+	@Enumerated(EnumType.STRING)
+	@Column(name = "post_type", length = 20)
+	private PostType postType;
 }

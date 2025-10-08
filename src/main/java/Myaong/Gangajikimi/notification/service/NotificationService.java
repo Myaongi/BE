@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import Myaong.Gangajikimi.common.enums.NotificationType;
+import Myaong.Gangajikimi.common.enums.PostType;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.memberlocation.entity.MemberLocation;
 import Myaong.Gangajikimi.memberlocation.repository.MemberLocationRepository;
@@ -29,7 +30,7 @@ public class NotificationService {
 	 * 반경 3km 내의 사용자들에게 알림 생성 (PostGIS ST_DWithin 사용)
 	 */
 	@Transactional
-	public void notifyNearbyUsers(Long postId, double postLat, double postLon, long excludeMemberId) {
+	public void notifyNearbyUsers(Long postId, double postLat, double postLon, long excludeMemberId, PostType postType) {
 		List<MemberLocation> nearbyUsers = locationRepository.findWithinRadius(postLat, postLon, 3000.0, excludeMemberId);
 
 		for (MemberLocation loc : nearbyUsers) {
@@ -39,6 +40,7 @@ public class NotificationService {
 				.message("근처에 새로운 제보가 올라왔어요. 골든타임이 지나기 전에 함께 찾아주세요🙏")
 				.isRead(false)
 				.postId(postId)
+				.postType(postType)
 				.build();
 
 			notificationRepository.save(notification);
