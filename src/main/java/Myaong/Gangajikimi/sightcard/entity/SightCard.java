@@ -29,10 +29,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "sight_card")
 public class SightCard extends BaseEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
 	@ManyToOne(fetch = FetchType.LAZY, optional = false) // 분실글
 	@JoinColumn(name = "post_lost_id")
 	private PostLost postLost;
