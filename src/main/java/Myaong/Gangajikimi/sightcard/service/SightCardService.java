@@ -14,6 +14,7 @@ import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.member.repository.MemberRepository;
+import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
 import Myaong.Gangajikimi.sightcard.converter.SightCardConverter;
@@ -38,6 +39,7 @@ public class SightCardService {
 	private final KakaoApiService kakaoApiService;
 	private final SightCardConverter sightCardConverter;
 	private final ChatRoomRepository chatRoomRepository;
+	private final NotificationService notificationService;
 
 	// 채팅방 생성/재사용용
 	private final ChatRoomService chatRoomService;
@@ -51,6 +53,7 @@ public class SightCardService {
 
 		Member reporter = memberRepository.findById(reporterId)
 			.orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
 
 		// 자기 글에는 금지 (정책에 맞는 ErrorCode로 교체 가능)
 		if (postLost.getMember().getId().equals(reporter.getId())) {
@@ -94,10 +97,18 @@ public class SightCardService {
 				.build()
 		);
 
+		// 발견카드 생성 + 채팅방 생성 시 인앱 알림을 받을 실종게시글 작성자 ID
+		Long receiverId = postLost.getMember().getId();
+
+		if (!receiverId.equals(reporterId)) {
+			notificationService.notifyNewSighting(receiverId, room.getChatroomId(), postLost.getId());
+		}
+
 		// 6) 통합 응답
 		return sightCardConverter.toCreateWithChatResponse(saved, room);
 	}
 
+	/** 채팅방 id를 통해 발견카드 조회 */
 	@Transactional(readOnly = true)
 	public SightCardDto.SightCardResponse getByChatRoom(Long chatRoomId, Long participatorId) {
 		// 권한: 방 참가자만

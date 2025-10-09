@@ -5,6 +5,7 @@ import static Myaong.Gangajikimi.common.response.ErrorCode.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,38 @@ public class NotificationService {
 			notificationRepository.save(notification);
 		}
 	}
+
+
+	/**
+	 * 발견카드가 생성되고 채팅방이 열렸을 때,
+	 * 분실글 작성자(=receiverId)에게 NEW_SIGHTING 알림 전송
+	 */
+	@Transactional
+	public void notifyNewSighting(Long receiverId, Long chatRoomId, Long postId) {
+		if (receiverId == null){
+			throw new GeneralException(MEMBER_NOT_FOUND);
+		}
+		if (chatRoomId == null){
+			throw new GeneralException(CHATROOM_NOT_FOUND);
+		}
+
+		Notification notification = Notification.builder()
+			.receiverId(receiverId)
+			.type(NotificationType.NEW_SIGHTING)
+			.message("내 실종게시글에 새로운 발견카드가 도착했어요. 목격자와 1:1 채팅으로 확인해봐요.")
+			.isRead(false)
+			.chatRoomId(chatRoomId)
+			.postId(postId)          // 있으면 저장(선택)
+			.postType(PostType.LOST) // 있으면 저장(선택: NEW_SIGHTING엔 필요 없지만 통일성 위해)
+			.build();
+
+		try {
+			notificationRepository.save(notification);
+		} catch (DataIntegrityViolationException ignore) {
+			// (선택) 유니크 인덱스에 걸리면 무시하도록
+		}
+	}
+
 
 	// 내 알림목록 조회
 	@Transactional(readOnly = true)
