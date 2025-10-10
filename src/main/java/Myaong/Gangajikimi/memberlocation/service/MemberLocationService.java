@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberLocationService {
 
 	private final MemberLocationRepository memberlocationrepository;
-	private static final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+	private final GeometryFactory geometryFactory;
 
 
 	@Transactional
