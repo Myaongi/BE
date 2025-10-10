@@ -1,4 +1,4 @@
-package Myaong.Gangajikimi.common.dto;
+package Myaong.Gangajikimi.common.dto.request;
 
 import Myaong.Gangajikimi.common.enums.DogStatus;
 import io.swagger.v3.oas.annotations.media.Schema;

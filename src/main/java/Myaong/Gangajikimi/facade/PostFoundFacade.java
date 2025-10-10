@@ -1,7 +1,7 @@
 package Myaong.Gangajikimi.facade;
 
-import Myaong.Gangajikimi.common.dto.DogStatusUpdateRequest;
-import Myaong.Gangajikimi.common.dto.DogStatusUpdateResponse;
+import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
+import Myaong.Gangajikimi.common.dto.response.DogStatusUpdateResponse;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.member.service.MemberService;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
