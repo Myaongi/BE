@@ -1,6 +1,9 @@
 package Myaong.Gangajikimi.member.repository;
 
 import Myaong.Gangajikimi.member.entity.Member;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.lang.NonNull;
 
@@ -16,5 +19,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	boolean existsByEmail(String email);
 
 	boolean existsByMemberName(String memberName);
+
+	Page<Member> findByMemberNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+		String nickname, String email, Pageable pageable);
+
+	long count();
 
 }
