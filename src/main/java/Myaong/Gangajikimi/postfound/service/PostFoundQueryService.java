@@ -1,7 +1,7 @@
 package Myaong.Gangajikimi.postfound.service;
 
-import Myaong.Gangajikimi.common.dto.PageResponse;
-import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
+import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.common.dto.response.PageResponse;
 import Myaong.Gangajikimi.postfound.web.dto.response.PostFoundHomeResponse;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
@@ -25,7 +25,6 @@ public class PostFoundQueryService {
 
     private final PostFoundRepository postFoundRepository;
     private final S3Service s3Service;
-    private final KakaoApiService kakaoApiService;
 
     public PostFound findPostFoundById(Long postId) {
 
@@ -78,14 +77,17 @@ public class PostFoundQueryService {
     /**
      * 발견했어요 게시글 목록 조회 (메인 페이지용)
      */
-    public PageResponse getFoundPosts(int page, int size) {
-        // 프론트엔드에서 1부터 시작하는 페이지를 0부터 시작하도록 변환
-        int adjustedPage = Math.max(0, page - 1);
-        Pageable pageable = Pageable.ofSize(size).withPage(adjustedPage);
-        Page<PostFound> foundPosts = postFoundRepository.findAllByOrderByCreatedAtDesc(pageable);
-        
-        // TODO: 필터링 기능 구현 예정
-        
+    public PageResponse getFoundPosts(Integer size, Integer page, FilterRequest request) {
+
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+
+        Page<PostFound> foundPosts = postFoundRepository.findPostFoundByFilter(pageable,
+                                                                                request.getSortType(),
+                                                                                request.getMaxDistance(),
+                                                                                request.getTimeFilter(),
+                                                                                request.getUserLongitude(),
+                                                                                request.getUserLatitude());
+
         // PostFound를 PostFoundHomeResponse로 변환 (PresignedUrl 포함)
         List<PostFoundHomeResponse> foundResponses = foundPosts.getContent().stream()
             .map(postFound -> {

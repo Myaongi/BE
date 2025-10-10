@@ -1,6 +1,7 @@
 package Myaong.Gangajikimi.postlost.service;
 
-import Myaong.Gangajikimi.common.dto.PageResponse;
+import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.common.dto.response.PageResponse;
 import Myaong.Gangajikimi.postlost.web.dto.response.PostLostHomeResponse;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
@@ -77,10 +78,16 @@ public class PostLostQueryService {
     /**
      * 잃어버렸어요 게시글 목록 조회 (메인 페이지용)
      */
-    public PageResponse getLostPosts(int page, int size) {
+    public PageResponse getLostPosts(int page, int size, FilterRequest request) {
+
         Pageable pageable = Pageable.ofSize(size).withPage(page);
-        Page<PostLost> lostPosts = postLostRepository.findAllByOrderByCreatedAtDesc(pageable);
-        
+        Page<PostLost> lostPosts = postLostRepository.findPostLostByFilter(pageable,
+                                                                            request.getSortType(),
+                                                                            request.getMaxDistance(),
+                                                                            request.getTimeFilter(),
+                                                                            request.getUserLongitude(),
+                                                                            request.getUserLatitude());
+
         // TODO: 필터링 기능 구현 예정
         
         List<PostLostHomeResponse> lostResponses = lostPosts.getContent().stream()

@@ -39,6 +39,8 @@ public class QPostFound extends EntityPathBase<PostFound> {
 
     public final DatePath<java.time.LocalDate> foundDate = createDate("foundDate", java.time.LocalDate.class);
 
+    public final StringPath foundRegion = createString("foundRegion");
+
     public final ComparablePath<org.locationtech.jts.geom.Point> foundSpot = createComparable("foundSpot", org.locationtech.jts.geom.Point.class);
 
     public final DateTimePath<java.time.LocalDateTime> foundTime = createDateTime("foundTime", java.time.LocalDateTime.class);

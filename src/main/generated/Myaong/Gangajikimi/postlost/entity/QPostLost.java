@@ -44,6 +44,8 @@ public class QPostLost extends EntityPathBase<PostLost> {
 
     public final DatePath<java.time.LocalDate> lostDate = createDate("lostDate", java.time.LocalDate.class);
 
+    public final StringPath lostRegion = createString("lostRegion");
+
     public final ComparablePath<org.locationtech.jts.geom.Point> lostSpot = createComparable("lostSpot", org.locationtech.jts.geom.Point.class);
 
     public final DateTimePath<java.time.LocalDateTime> lostTime = createDateTime("lostTime", java.time.LocalDateTime.class);
@@ -51,6 +53,8 @@ public class QPostLost extends EntityPathBase<PostLost> {
     public final Myaong.Gangajikimi.member.entity.QMember member;
 
     public final ListPath<String, StringPath> realImage = this.<String, StringPath>createList("realImage", String.class, StringPath.class, PathInits.DIRECT2);
+
+    public final ListPath<Myaong.Gangajikimi.sightcard.entity.SightCard, Myaong.Gangajikimi.sightcard.entity.QSightCard> sightCards = this.<Myaong.Gangajikimi.sightcard.entity.SightCard, Myaong.Gangajikimi.sightcard.entity.QSightCard>createList("sightCards", Myaong.Gangajikimi.sightcard.entity.SightCard.class, Myaong.Gangajikimi.sightcard.entity.QSightCard.class, PathInits.DIRECT2);
 
     public final EnumPath<Myaong.Gangajikimi.common.enums.DogStatus> status = createEnum("status", Myaong.Gangajikimi.common.enums.DogStatus.class);
 

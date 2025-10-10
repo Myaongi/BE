@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PostLostRepository extends JpaRepository<PostLost,Long> {
+public interface PostLostRepository extends JpaRepository<PostLost,Long>, PostLostRepositoryCustom {
 
     Optional<PostLost> findPostLostById(Long id);
     

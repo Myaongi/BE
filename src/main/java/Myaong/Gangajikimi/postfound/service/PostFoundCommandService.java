@@ -37,7 +37,7 @@ public class PostFoundCommandService {
     private final S3Service s3Service;
     private final KakaoApiService kakaoApiService;
     private final NotificationService notificationService;
-    private static final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+    private final GeometryFactory geometryFactory;
 
     public PostFound postPostFound(PostFoundRequest request, Member member, List<MultipartFile> images){
 

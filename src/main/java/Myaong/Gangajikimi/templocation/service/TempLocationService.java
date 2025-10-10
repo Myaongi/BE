@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class TempLocationService {
 
     private final TempLocationRepository tempLocationRepository;
-    private static final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+    private final GeometryFactory geometryFactory;
 
     public TempLocation saveTempLocation(double longitude, double latitude, PostFound postFound) {
 

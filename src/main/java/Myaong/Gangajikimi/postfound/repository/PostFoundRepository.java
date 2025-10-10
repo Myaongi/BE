@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PostFoundRepository extends JpaRepository<PostFound, Long> {
+public interface PostFoundRepository extends JpaRepository<PostFound, Long>, PostFoundRepositoryCustom {
 
     Optional<PostFound> findPostFoundById(Long id);
     

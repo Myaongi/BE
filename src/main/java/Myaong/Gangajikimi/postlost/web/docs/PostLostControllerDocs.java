@@ -1,6 +1,7 @@
 package Myaong.Gangajikimi.postlost.web.docs;
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
+import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
 import Myaong.Gangajikimi.postlostreport.dto.PostLostReportRequest;
 import Myaong.Gangajikimi.common.response.GlobalResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -184,7 +185,7 @@ public interface PostLostControllerDocs {
                                 "postId": 1,
                                 "title": "강아지를 잃어버렸습니다",
                                 "dogName": "멍멍이",
-                                "dogType": "MALTESE",
+                                "dogType": "말티즈",
                                 "dogColor": "흰색",
                                 "dogGender": "MALE",
                                 "dogStatus": "MISSING",
@@ -193,6 +194,7 @@ public interface PostLostControllerDocs {
                                 "lostTime": [2024, 1, 1, 14, 30, 0, 0],
                                 "longitude": 127.0276,
                                 "latitude": 37.4979,
+                                "lostRegion": "서울시 서초구",
                                 "realImages": [
                                     "https://s3.amazonaws.com/bucket/presigned-url-example1",
                                     "https://s3.amazonaws.com/bucket/presigned-url-example2"
@@ -204,7 +206,7 @@ public interface PostLostControllerDocs {
                             }
                         }
                         """,
-                    description = "result: PostLostDetailResponse 객체 - postId(게시글 ID), title(제목), dogName(강아지 이름), dogType(견종), dogColor(색상), dogGender(성별), dogStatus(강아지 상태: MISSING/SIGHTED/RETURNED), content(내용), lostDate(분실 날짜), lostTime(분실 시간), longitude(경도), latitude(위도), realImages(실제 이미지 Presigned URL 목록), authorId(작성자 ID), authorName(작성자명), createdAt(작성일시), timeAgo(상대시간)"
+                    description = "result: PostLostDetailResponse 객체 - postId(게시글 ID), title(제목), dogName(강아지 이름), dogType(견종), dogColor(색상), dogGender(성별: MALE/FEMALE), dogStatus(강아지 상태: MISSING/SIGHTED/RETURNED), content(내용), lostDate(분실 날짜), lostTime(분실 시간), longitude(경도), latitude(위도), lostRegion(행정구역), realImages(실제 이미지 Presigned URL 목록), authorId(작성자 ID), authorName(작성자명), createdAt(작성일시), timeAgo(상대시간)"
                 )
             )
         )
@@ -246,8 +248,22 @@ public interface PostLostControllerDocs {
     );
 
     @Operation(
-        summary = "잃어버렸어요 게시글 목록 조회",
-        description = "잃어버렸어요 게시글 목록을 페이지네이션으로 조회합니다. 최신순으로 정렬됩니다."
+        summary = "잃어버렸어요 게시글 목록 조회 (필터링)",
+        description = """
+            잃어버렸어요 게시글 목록을 페이지네이션 및 필터링으로 조회합니다.
+            
+            **Query String 파라미터 예시:**
+            ```
+            GET /api/lost-posts?page=0&size=20&sortType=LATEST&maxDistance=3&timeFilter=ONE_WEEK&userLongitude=127.0276&userLatitude=37.4979
+            ```
+            
+            **필터 옵션 (모두 선택사항):**
+            - sortType: 정렬 기준 (LATEST: 최신순, DISTANCE: 거리순) - 기본값: LATEST
+            - maxDistance: 최대 거리 (1~5km, 미입력 시 전체)
+            - timeFilter: 시간 필터 (ONE_HOUR, ONE_DAY, ONE_WEEK, ONE_MONTH, 미입력 시 전체)
+            - userLongitude: 사용자 경도 (거리순 정렬 시 필수)
+            - userLatitude: 사용자 위도 (거리순 정렬 시 필수)
+            """
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -302,7 +318,27 @@ public interface PostLostControllerDocs {
         @io.swagger.v3.oas.annotations.Parameter(
             description = "페이지 크기",
             example = "20"
-        ) Integer size
+        ) Integer size,
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "정렬 기준 (LATEST: 최신순, DISTANCE: 거리순)",
+            example = "LATEST"
+        ) Myaong.Gangajikimi.common.enums.SortType sortType,
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "최대 거리 (1~5km)",
+            example = "3"
+        ) Integer maxDistance,
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "시간 필터 (ONE_HOUR, ONE_DAY, ONE_WEEK, ONE_MONTH)",
+            example = "ONE_WEEK"
+        ) Myaong.Gangajikimi.common.enums.TimeFilter timeFilter,
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "사용자 경도",
+            example = "127.0276"
+        ) Double userLongitude,
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "사용자 위도",
+            example = "37.4979"
+        ) Double userLatitude
     );
 
     @Operation(
@@ -436,7 +472,7 @@ public interface PostLostControllerDocs {
     })
     ResponseEntity<GlobalResponse> updatePostLostStatus(
         @PathVariable Long postLostId,
-        @RequestBody Myaong.Gangajikimi.common.dto.DogStatusUpdateRequest request,
+        @RequestBody DogStatusUpdateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     );
 }
