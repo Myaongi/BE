@@ -94,7 +94,7 @@ public class PostFoundController implements PostFoundControllerDocs {
                 .userLatitude(userLatitude)
                 .build();
 
-        PageResponse response = postFoundQueryService.getFoundPosts(page, size, request);
+        PageResponse response = postFoundQueryService.getFoundPosts(size, page, request);
         
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }
