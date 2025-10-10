@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PostLostRepository extends JpaRepository<PostLost,Long> {
@@ -17,4 +18,6 @@ public interface PostLostRepository extends JpaRepository<PostLost,Long> {
     // 마이페이지용 내 게시글 조회 (최신순)
     Page<PostLost> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
 
+    int countByMemberId(Long memberId);
+    List<PostLost> findAllByMemberIdOrderByCreatedAtDesc(Long memberId);
 }

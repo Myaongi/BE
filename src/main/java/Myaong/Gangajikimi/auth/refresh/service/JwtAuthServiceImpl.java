@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.auth.refresh.service;
 
 import Myaong.Gangajikimi.auth.jwt.JwtTokenProvider;
 import Myaong.Gangajikimi.auth.web.dto.*;
+import Myaong.Gangajikimi.common.enums.AccountStatus;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.member.entity.Member;
@@ -59,6 +60,11 @@ public class JwtAuthServiceImpl implements AuthService{
         // DB에 저장된 비밀번호 값과 비교 (비밀번호 검증)
         if(!passwordEncoder.matches(request.getPassword(), member.getPassword())){
             throw new GeneralException(ErrorCode.INVALIDATE_PASSWORD);
+        }
+
+        // 정지된 계정일 경우
+        if (member.getAccountStatus() == AccountStatus.LOCKED) {
+            throw new GeneralException(ErrorCode.MEMBER_LOCKED);
         }
 
         // 두 정보가 모두 일치하면 Authentication 객체 생성

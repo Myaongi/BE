@@ -160,7 +160,7 @@ public class PostLostCommandService {
 
         boolean isOwner = member.equals(postLost.getMember());
 
-        boolean isAdmin = member.getRole() == Role.ADMIN;
+        boolean isAdmin = member.getRole() == Role.ROLE_ADMIN;
 
         if (!isOwner && !isAdmin) {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_DELETING);

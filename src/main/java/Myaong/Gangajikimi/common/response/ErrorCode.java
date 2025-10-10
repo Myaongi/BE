@@ -24,6 +24,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER400", "존재하지 않는 회원 ID입니다."),
     EMAIL_DUPLICATE(HttpStatus.BAD_REQUEST, "MEMBER401", "이미 사용 중인 이메일입니다."),
     NICKNAME_DUPLICATE(HttpStatus.BAD_REQUEST, "MEMBER402", "이미 사용 중인 닉네임입니다."),
+    MEMBER_LOCKED(HttpStatus.BAD_REQUEST, "MEMBER404", "정지된 계정입니다."),
 
     // MESSAGE
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MESSAGE400", "해당 메세지는 존재하지 않습니다."),
