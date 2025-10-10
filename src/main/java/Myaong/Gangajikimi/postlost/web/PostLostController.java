@@ -2,8 +2,11 @@ package Myaong.Gangajikimi.postlost.web;
 
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
-import Myaong.Gangajikimi.common.dto.DogStatusUpdateRequest;
-import Myaong.Gangajikimi.common.dto.PageResponse;
+import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
+import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.common.dto.response.PageResponse;
+import Myaong.Gangajikimi.common.enums.SortType;
+import Myaong.Gangajikimi.common.enums.TimeFilter;
 import Myaong.Gangajikimi.common.response.GlobalResponse;
 import Myaong.Gangajikimi.common.response.SuccessCode;
 import Myaong.Gangajikimi.facade.PostLostFacade;
@@ -78,9 +81,22 @@ public class PostLostController implements PostLostControllerDocs {
     @GetMapping
     public ResponseEntity<GlobalResponse> getLostPosts(
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer size) {
+            @RequestParam(defaultValue = "20") Integer size,
+            @RequestParam(required = false, defaultValue = "LATEST") SortType sortType,
+            @RequestParam(required = false) Integer maxDistance,
+            @RequestParam(required = false) TimeFilter timeFilter,
+            @RequestParam(required = false) Double userLongitude,
+            @RequestParam(required = false) Double userLatitude) {
         
-        PageResponse response = postLostQueryService.getLostPosts(page, size);
+        FilterRequest request = FilterRequest.builder()
+                .sortType(sortType)
+                .maxDistance(maxDistance)
+                .timeFilter(timeFilter)
+                .userLongitude(userLongitude)
+                .userLatitude(userLatitude)
+                .build();
+        
+        PageResponse response = postLostQueryService.getLostPosts(page, size, request);
         
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }

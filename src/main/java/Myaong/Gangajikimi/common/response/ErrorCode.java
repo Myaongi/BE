@@ -49,6 +49,9 @@ public enum ErrorCode {
     UNAUTHORIZED_DELETING(HttpStatus.UNAUTHORIZED, "POST402", "게시글 삭제 권한이 없습니다."),
     CANNOT_REPORT_OWN_POST(HttpStatus.BAD_REQUEST, "POST403", "본인의 게시글은 신고할 수 없습니다."),
     ALREADY_REPORTED(HttpStatus.BAD_REQUEST, "POST404", "이미 신고한 게시글입니다."),
+    //FILTER
+    LOCATION_REQUIRED(HttpStatus.BAD_REQUEST, "POST405", "사용자의 위치 정보가 필요합니다."),
+    INVALID_TIME_FILTER(HttpStatus.BAD_REQUEST, "POST406", "적절하지 않은 시간입니다."),
 
     //FASTAPI
     AI_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AI500", "AI 서버로부터 응답을 가져오는 데 실패했습니다."),

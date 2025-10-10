@@ -1,8 +1,11 @@
 package Myaong.Gangajikimi.postfound.web.controller;
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
-import Myaong.Gangajikimi.common.dto.DogStatusUpdateRequest;
-import Myaong.Gangajikimi.common.dto.PageResponse;
+import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
+import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.common.dto.response.PageResponse;
+import Myaong.Gangajikimi.common.enums.SortType;
+import Myaong.Gangajikimi.common.enums.TimeFilter;
 import Myaong.Gangajikimi.common.response.GlobalResponse;
 import Myaong.Gangajikimi.common.response.SuccessCode;
 import Myaong.Gangajikimi.facade.PostFoundFacade;
@@ -76,9 +79,22 @@ public class PostFoundController implements PostFoundControllerDocs {
     @GetMapping
     public ResponseEntity<GlobalResponse> getFoundPosts(
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer size) {
-        
-        PageResponse response = postFoundQueryService.getFoundPosts(page, size);
+            @RequestParam(defaultValue = "20") Integer size,
+            @RequestParam(required = false, defaultValue = "LATEST") SortType sortType,
+            @RequestParam(required = false) Integer maxDistance,
+            @RequestParam(required = false) TimeFilter timeFilter,
+            @RequestParam(required = false) Double userLongitude,
+            @RequestParam(required = false) Double userLatitude) {
+
+        FilterRequest request = FilterRequest.builder()
+                .sortType(sortType)
+                .maxDistance(maxDistance)
+                .timeFilter(timeFilter)
+                .userLongitude(userLongitude)
+                .userLatitude(userLatitude)
+                .build();
+
+        PageResponse response = postFoundQueryService.getFoundPosts(page, size, request);
         
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }

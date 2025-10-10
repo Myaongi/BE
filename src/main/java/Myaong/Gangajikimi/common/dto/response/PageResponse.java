@@ -1,4 +1,4 @@
-package Myaong.Gangajikimi.common.dto;
+package Myaong.Gangajikimi.common.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
