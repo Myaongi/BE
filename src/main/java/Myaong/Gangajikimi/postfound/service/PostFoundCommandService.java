@@ -174,7 +174,7 @@ public class PostFoundCommandService {
 
         boolean isOwner = member.equals(postFound.getMember());
 
-        boolean isAdmin = member.getRole() == Role.ADMIN;
+        boolean isAdmin = member.getRole() == Role.ROLE_ADMIN;
 
         if (!isOwner && !isAdmin) {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_DELETING);

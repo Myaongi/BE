@@ -1,6 +1,7 @@
 package Myaong.Gangajikimi.postfoundreport.entity;
 
 import Myaong.Gangajikimi.common.BaseEntity;
+import Myaong.Gangajikimi.common.enums.ReportStatus;
 import Myaong.Gangajikimi.common.enums.ReportType;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
@@ -29,6 +30,10 @@ public class PostFoundReport extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String reportContent; // 신고 내용 (선택사항)
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReportStatus reportStatus = ReportStatus.PENDING;
 
     @Builder
     private PostFoundReport(PostFound postFound, Member reporter, ReportType reportType, String reportContent) {
