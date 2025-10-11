@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -160,7 +159,7 @@ public class PostLostCommandService {
 
         boolean isOwner = member.equals(postLost.getMember());
 
-        boolean isAdmin = member.getRole() == Role.ROLE_ADMIN;
+        boolean isAdmin = member.getRole() == Role.ADMIN;
 
         if (!isOwner && !isAdmin) {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_DELETING);

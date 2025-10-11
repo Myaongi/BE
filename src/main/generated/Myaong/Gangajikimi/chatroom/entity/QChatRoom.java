@@ -33,6 +33,10 @@ public class QChatRoom extends EntityPathBase<ChatRoom> {
 
     public final Myaong.Gangajikimi.member.entity.QMember member2;
 
+    public final NumberPath<Long> postId = createNumber("postId", Long.class);
+
+    public final EnumPath<Myaong.Gangajikimi.common.enums.PostType> postType = createEnum("postType", Myaong.Gangajikimi.common.enums.PostType.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 

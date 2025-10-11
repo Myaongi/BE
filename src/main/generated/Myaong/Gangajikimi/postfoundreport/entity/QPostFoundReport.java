@@ -36,6 +36,8 @@ public class QPostFoundReport extends EntityPathBase<PostFoundReport> {
 
     public final Myaong.Gangajikimi.member.entity.QMember reporter;
 
+    public final EnumPath<Myaong.Gangajikimi.common.enums.ReportStatus> reportStatus = createEnum("reportStatus", Myaong.Gangajikimi.common.enums.ReportStatus.class);
+
     public final EnumPath<Myaong.Gangajikimi.common.enums.ReportType> reportType = createEnum("reportType", Myaong.Gangajikimi.common.enums.ReportType.class);
 
     //inherited
