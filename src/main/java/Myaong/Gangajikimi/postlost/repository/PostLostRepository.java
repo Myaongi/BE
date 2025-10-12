@@ -20,4 +20,7 @@ public interface PostLostRepository extends JpaRepository<PostLost,Long>, PostLo
 
     int countByMemberId(Long memberId);
     List<PostLost> findAllByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    Page<PostLost> findByAiImageIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+
 }

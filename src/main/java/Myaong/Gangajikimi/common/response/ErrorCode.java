@@ -71,7 +71,12 @@ public enum ErrorCode {
 
     //KAKAO
     REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "REGION404", "행정구역 정보를 불러올 수 없습니다."),
-    KAKAO_SERVICE_AREA_ERROR(HttpStatus.BAD_REQUEST, "KAKAO400", "서비스 영역 밖의 주소입니다. 대한민국 내 주소를 입력해주세요.");
+    KAKAO_SERVICE_AREA_ERROR(HttpStatus.BAD_REQUEST, "KAKAO400", "서비스 영역 밖의 주소입니다. 대한민국 내 주소를 입력해주세요."),
+
+    //ADMIN
+    CANNOT_DELETE_POST(HttpStatus.NOT_FOUND, "DELETE400", "삭제 처리가 되지 않았습니다."),
+    CANNOT_ACCESS_DETAIL(HttpStatus.NOT_FOUND, "DETAIL400", "게시글 상세 정보를 조회할 수 없습니다.");
+
 
 
     private final HttpStatus status;

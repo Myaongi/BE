@@ -20,5 +20,8 @@ public interface PostFoundRepository extends JpaRepository<PostFound, Long>, Pos
 
     int countByMemberId(Long memberId);
     List<PostFound> findAllByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    Page<PostFound> findByAiImageIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+
 }
 
