@@ -56,7 +56,7 @@ public class PostFoundRepositoryImpl implements PostFoundRepositoryCustom {
             }
 
             // 4. User 위치 기반으로 좌표 생성
-            Point userLocation = geometryFactory.createPoint(new Coordinate(userLatitude, userLongitude));
+            Point userLocation = geometryFactory.createPoint(new Coordinate(userLongitude, userLatitude));
 
             // 5. 거리 측정
             distance = Expressions.numberTemplate(Double.class, "ST_Distance({0}, {1})",
