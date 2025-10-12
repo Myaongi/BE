@@ -49,7 +49,7 @@ public class AdminPostDto {
         private List<String> realImages;
 
         private String dogName;        // 강아지 이름
-        private DogType breed;          // 품종
+        private String breed;          // 품종
         private String color;          // 색상
         private DogGender gender;         // 성별
         private String description;    // 상세 설명(내용)

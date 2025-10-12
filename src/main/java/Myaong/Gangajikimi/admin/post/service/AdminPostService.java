@@ -127,7 +127,7 @@ public class AdminPostService {
         return AdminPostDto.ListItem.builder()
                 .postId(postLost.getId())
                 .type("LOST")
-                .status(postLost.getStatus().name()) // DogStatus
+                .status(postLost.getStatus().getDescription()) // DogStatus
                 .thumbnailUrl(resolveThumb(postLost.getAiImage(), postLost.getRealImage()))
                 .title(postLost.getTitle())
                 .authorName(postLost.getMember().getMemberName())
@@ -140,7 +140,7 @@ public class AdminPostService {
         return AdminPostDto.ListItem.builder()
                 .postId(postFound.getId())
                 .type("FOUND")
-                .status(postFound.getStatus().name()) // DogStatus
+                .status(postFound.getStatus().getDescription()) // DogStatus
                 .thumbnailUrl(resolveThumb(postFound.getAiImage(), postFound.getRealImage()))
                 .title(postFound.getTitle())
                 .authorName(postFound.getMember().getMemberName())
@@ -154,7 +154,7 @@ public class AdminPostService {
         return AdminPostDto.Detail.builder()
                 .postId(postLost.getId())
                 .type("LOST")
-                .status(postLost.getStatus().name())
+                .status(postLost.getStatus().getDescription())
                 .title(postLost.getTitle())
                 .authorName(postLost.getMember().getMemberName())
                 .createdAt(postLost.getCreatedAt())
@@ -162,7 +162,7 @@ public class AdminPostService {
                 .aiImage(postLost.getAiImage())
                 .realImages(postLost.getRealImage())
                 .dogName(s(postLost.getDogName()))
-                .breed(postLost.getDogType())
+                .breed(postLost.getDogType() != null ? postLost.getDogType().getType() : null)
                 .color(s(postLost.getDogColor()))
                 .gender(postLost.getDogGender())
                 .description(s(postLost.getContent()))
@@ -178,7 +178,7 @@ public class AdminPostService {
         return AdminPostDto.Detail.builder()
                 .postId(postFound.getId())
                 .type("FOUND")
-                .status(postFound.getStatus().name())
+                .status(postFound.getStatus().getDescription())
                 .title(postFound.getTitle())
                 .authorName(postFound.getMember().getMemberName())
                 .createdAt(postFound.getCreatedAt())
@@ -186,7 +186,7 @@ public class AdminPostService {
                 .aiImage(postFound.getAiImage())
                 .realImages(postFound.getRealImage())
                 .dogName(null) // 목격글엔 보통 이름 없음(필요하면 p.getDogName()으로 교체)
-                .breed(postFound.getDogType())
+                .breed(postFound.getDogType() != null ? postFound.getDogType().getType() : null)
                 .color(s(postFound.getDogColor()))
                 .gender(postFound.getDogGender())
                 .description(s(postFound.getContent()))
