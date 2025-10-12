@@ -59,7 +59,7 @@ public class PostFoundRepositoryImpl implements PostFoundRepositoryCustom {
             Point userLocation = geometryFactory.createPoint(new Coordinate(userLongitude, userLatitude));
 
             // 5. 거리 측정
-            distance = Expressions.numberTemplate(Double.class, "ST_Distance({0}, {1})",
+            distance = Expressions.numberTemplate(Double.class, "ST_DistanceSphere({0}, {1})",
                     postFound.foundSpot, userLocation);
 
         }
