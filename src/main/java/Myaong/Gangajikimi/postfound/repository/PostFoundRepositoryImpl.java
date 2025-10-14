@@ -77,6 +77,10 @@ public class PostFoundRepositoryImpl implements PostFoundRepositoryCustom {
             predicate.and(decideTimeFilter(timeFilter));
         }
 
+        // 9. soft delete 조건 추가
+        predicate.and(postFound.deletedByAdmin.isFalse());
+
+
         List<PostFound> posts = queryFactory
                 .selectFrom(postFound)
                 .where(predicate)

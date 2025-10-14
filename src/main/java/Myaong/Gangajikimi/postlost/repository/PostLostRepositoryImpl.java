@@ -79,6 +79,11 @@ public class PostLostRepositoryImpl implements PostLostRepositoryCustom {
                 predicate.and(decideTimeFilter(timeFilter));
             }
 
+            // 9. soft delete 조건 추가
+            predicate.and(postLost.deletedByAdmin.isFalse());
+
+
+
             List<PostLost> posts = queryFactory
                     .selectFrom(postLost)
                     .where(predicate)

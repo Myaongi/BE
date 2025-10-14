@@ -16,12 +16,17 @@ public interface PostFoundRepository extends JpaRepository<PostFound, Long>, Pos
     Page<PostFound> findAllByOrderByCreatedAtDesc(Pageable pageable);
     
     // 마이페이지용 내 게시글 조회 (최신순)
-    Page<PostFound> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
+    Page<PostFound> findByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(Long memberId, Pageable pageable);
 
     int countByMemberId(Long memberId);
-    List<PostFound> findAllByMemberIdOrderByCreatedAtDesc(Long memberId);
+    List<PostFound> findAllByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(Long memberId);
 
-    Page<PostFound> findByAiImageIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+    // -- 관리자에서 사용 --
+    // 목록(삭제글 제외)
+    Page<PostFound> findByDeletedByAdminFalseOrderByCreatedAtDesc(Pageable pageable);
+
+    // 목록 + AI 이미지 필터(삭제글 제외)
+    Page<PostFound> findByDeletedByAdminFalseAndAiImageIsNotNullOrderByCreatedAtDesc(Pageable pageable);
 
 }
 
