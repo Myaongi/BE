@@ -113,7 +113,7 @@ public class PostLostQueryService {
      */
     public PageResponse getMyLostPosts(Long memberId, int page, int size) {
         Pageable pageable = Pageable.ofSize(size).withPage(page);
-        Page<PostLost> lostPosts = postLostRepository.findByMemberIdOrderByCreatedAtDesc(memberId, pageable);
+        Page<PostLost> lostPosts = postLostRepository.findByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(memberId, pageable);
         
         // PostLost를 PostLostHomeResponse로 변환 (PresignedUrl 포함)
         var lostResponses = lostPosts.getContent().stream()

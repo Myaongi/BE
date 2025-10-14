@@ -33,7 +33,7 @@ public class PostFoundReport extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReportStatus reportStatus = ReportStatus.PENDING;
+    private ReportStatus reportStatus = ReportStatus.PENDING; // 신고 상태
 
     @Builder
     private PostFoundReport(PostFound postFound, Member reporter, ReportType reportType, String reportContent) {
@@ -50,6 +50,10 @@ public class PostFoundReport extends BaseEntity {
                 .reportType(reportType)
                 .reportContent(reportContent)
                 .build();
+    }
+
+    public void changeReportStatus(ReportStatus status) {
+        this.reportStatus = status;
     }
 }
 

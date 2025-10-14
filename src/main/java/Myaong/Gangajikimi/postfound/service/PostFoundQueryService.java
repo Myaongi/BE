@@ -111,7 +111,7 @@ public class PostFoundQueryService {
      */
     public PageResponse getMyFoundPosts(Long memberId, int page, int size) {
         Pageable pageable = Pageable.ofSize(size).withPage(page);
-        Page<PostFound> foundPosts = postFoundRepository.findByMemberIdOrderByCreatedAtDesc(memberId, pageable);
+        Page<PostFound> foundPosts = postFoundRepository.findByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(memberId, pageable);
         
         // PostFound를 PostFoundHomeResponse로 변환 (PresignedUrl 포함)
         var foundResponses = foundPosts.getContent().stream()
