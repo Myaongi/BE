@@ -35,6 +35,4 @@ public class ChatRoom extends BaseEntity {
 
     @Column(name = "post_id", nullable = false)
     private Long postId;         // 해당 글 PK
-
-
 }

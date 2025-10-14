@@ -37,15 +37,15 @@ public class AdminPostService {
     ) {
         if ("LOST".equalsIgnoreCase(type)) {
             Page<PostLost> page = aiOnly
-                    ? lostRepo.findByAiImageIsNotNullOrderByCreatedAtDesc(pageable)
-                    : lostRepo.findAllByOrderByCreatedAtDesc(pageable);
+                    ? lostRepo.findByDeletedByAdminFalseAndAiImageIsNotNullOrderByCreatedAtDesc(pageable)
+                    : lostRepo.findByDeletedByAdminFalseOrderByCreatedAtDesc(pageable);
             return toPage(page.map(this::toListItemLost));
         }
 
         if ("FOUND".equalsIgnoreCase(type)) {
             Page<PostFound> page = aiOnly
-                    ? foundRepo.findByAiImageIsNotNullOrderByCreatedAtDesc(pageable)
-                    : foundRepo.findAllByOrderByCreatedAtDesc(pageable);
+                    ? foundRepo.findByDeletedByAdminFalseAndAiImageIsNotNullOrderByCreatedAtDesc(pageable)
+                    : foundRepo.findByDeletedByAdminFalseOrderByCreatedAtDesc(pageable);
             return toPage(page.map(this::toListItemFound));
         }
 
@@ -54,12 +54,12 @@ public class AdminPostService {
         Pageable doubled = PageRequest.of(pageable.getPageNumber(), want * 2);
 
         Page<PostLost>  lostPage  = aiOnly
-                ? lostRepo.findByAiImageIsNotNullOrderByCreatedAtDesc(doubled)
-                : lostRepo.findAllByOrderByCreatedAtDesc(doubled);
+                ? lostRepo.findByDeletedByAdminFalseAndAiImageIsNotNullOrderByCreatedAtDesc(doubled)
+                : lostRepo.findByDeletedByAdminFalseOrderByCreatedAtDesc(doubled);
 
         Page<PostFound> foundPage = aiOnly
-                ? foundRepo.findByAiImageIsNotNullOrderByCreatedAtDesc(doubled)
-                : foundRepo.findAllByOrderByCreatedAtDesc(doubled);
+                ? foundRepo.findByDeletedByAdminFalseAndAiImageIsNotNullOrderByCreatedAtDesc(doubled)
+                : foundRepo.findByDeletedByAdminFalseOrderByCreatedAtDesc(doubled);
 
         List<AdminPostDto.ListItem> merged = new ArrayList<>(lostPage.getNumberOfElements() + foundPage.getNumberOfElements());
         lostPage.getContent().forEach(e -> merged.add(toListItemLost(e)));
@@ -95,21 +95,24 @@ public class AdminPostService {
         throw new GeneralException(ErrorCode.CANNOT_ACCESS_DETAIL);
     }
 
-    /** 삭제 */
+    /** 관리자 삭제(소프트 삭제) */
     @Transactional
     public void delete(String type, Long postId) {
         if ("LOST".equalsIgnoreCase(type)) {
-            if (!lostRepo.existsById(postId)) throw new GeneralException(ErrorCode.POST_NOT_FOUND);
-            lostRepo.deleteById(postId);
+            PostLost postLost = lostRepo.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
+            if (!postLost.isDeletedByAdmin()) postLost.markDeletedByAdmin();
             return;
         }
         if ("FOUND".equalsIgnoreCase(type)) {
-            if (!foundRepo.existsById(postId)) throw new GeneralException(ErrorCode.POST_NOT_FOUND);
-            foundRepo.deleteById(postId);
+            PostFound postFound = foundRepo.findById(postId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
+            if (!postFound.isDeletedByAdmin()) postFound.markDeletedByAdmin();
             return;
         }
         throw new GeneralException(ErrorCode.CANNOT_DELETE_POST);
     }
+
 
     /* ===================== Mappers ===================== */
 

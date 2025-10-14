@@ -16,11 +16,14 @@ public interface PostLostRepository extends JpaRepository<PostLost,Long>, PostLo
     Page<PostLost> findAllByOrderByCreatedAtDesc(Pageable pageable);
     
     // 마이페이지용 내 게시글 조회 (최신순)
-    Page<PostLost> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
+    Page<PostLost> findByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(Long memberId, Pageable pageable);
 
     int countByMemberId(Long memberId);
-    List<PostLost> findAllByMemberIdOrderByCreatedAtDesc(Long memberId);
+    List<PostLost> findAllByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(Long memberId);
 
-    Page<PostLost> findByAiImageIsNotNullOrderByCreatedAtDesc(Pageable pageable);
+    // 목록(삭제글 제외)
+    Page<PostLost> findByDeletedByAdminFalseOrderByCreatedAtDesc(Pageable pageable);
 
+    // 목록 + AI 이미지 필터(삭제글 제외)
+    Page<PostLost> findByDeletedByAdminFalseAndAiImageIsNotNullOrderByCreatedAtDesc(Pageable pageable);
 }

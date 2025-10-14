@@ -94,7 +94,7 @@ public class AdminMemberService {
 		var list = new ArrayList<AdminMemberDto.PostSummary>();
 
 		if (type == null || "LOST".equalsIgnoreCase(type)) {
-			for (PostLost postLost : lostRepo.findAllByMemberIdOrderByCreatedAtDesc(memberId)) {
+			for (PostLost postLost : lostRepo.findAllByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(memberId)) {
 				list.add(AdminMemberDto.PostSummary.builder()
 					.postId(postLost.getId())
 					.type("LOST")
@@ -106,7 +106,7 @@ public class AdminMemberService {
 			}
 		}
 		if (type == null || "FOUND".equalsIgnoreCase(type)) {
-			for (PostFound postFound : foundRepo.findAllByMemberIdOrderByCreatedAtDesc(memberId)) {
+			for (PostFound postFound : foundRepo.findAllByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(memberId)) {
 				list.add(AdminMemberDto.PostSummary.builder()
 					.postId(postFound.getId())
 					.type("FOUND")
