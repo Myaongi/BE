@@ -43,12 +43,18 @@ public enum ErrorCode {
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION400", "존재하지 않는 알림입니다."),
     CANNOT_READ_NOTIFICATION(HttpStatus.BAD_REQUEST, "NOTIFICATION4001", "본인의 알림만 읽음 처리할 수 있습니다."),
 
+    //Report
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REPORT400", "존재하지 않는 신고내역입니다."),
+
     //POST
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST400", "존재하지 않는 게시글입니다."),
     UNAUTHORIZED_UPDATING(HttpStatus.UNAUTHORIZED, "POST401", "게시글 수정 권한이 없습니다."),
     UNAUTHORIZED_DELETING(HttpStatus.UNAUTHORIZED, "POST402", "게시글 삭제 권한이 없습니다."),
     CANNOT_REPORT_OWN_POST(HttpStatus.BAD_REQUEST, "POST403", "본인의 게시글은 신고할 수 없습니다."),
     ALREADY_REPORTED(HttpStatus.BAD_REQUEST, "POST404", "이미 신고한 게시글입니다."),
+    NOT_EXIST_POSTTYPE(HttpStatus.NOT_FOUND, "POST405", "해당 게시글 카테고리는 존재하지 않습니다."),
+
+
     //FILTER
     LOCATION_REQUIRED(HttpStatus.BAD_REQUEST, "POST405", "사용자의 위치 정보가 필요합니다."),
     INVALID_TIME_FILTER(HttpStatus.BAD_REQUEST, "POST406", "적절하지 않은 시간입니다."),
