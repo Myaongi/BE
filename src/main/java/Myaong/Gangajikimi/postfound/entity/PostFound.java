@@ -5,6 +5,7 @@ import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundUpdateRequest;
+import Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport;
 import Myaong.Gangajikimi.templocation.entity.TempLocation;
 
 import jakarta.persistence.Entity;
@@ -67,8 +68,26 @@ public class PostFound extends BaseEntity {
     @ElementCollection
     private List<String> realImage;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deletedByAdmin = false;
+
+    private LocalDateTime deletedAt;
+
+    public boolean isDeletedByAdmin() {
+        return deletedByAdmin;
+    }
+
+    /** 운영자 삭제(소프트 삭제) */
+    public void markDeletedByAdmin() {
+        this.deletedByAdmin = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
     @OneToMany(mappedBy = "postFound", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TempLocation> tempLocations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "postFound", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostFoundReport> postFoundReports = new ArrayList<>();
 
     @Builder
     private PostFound(List<String> realImage,

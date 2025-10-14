@@ -7,6 +7,7 @@ import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlostreport.entity.PostLostReport;
 import Myaong.Gangajikimi.sightcard.entity.SightCard;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -71,8 +72,26 @@ public class PostLost extends BaseEntity {
     @ElementCollection
     private List<String> realImage; // 실제 사진 (URL 또는 파일 경로 리스트)
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean deletedByAdmin = false;
+
+    private LocalDateTime deletedAt;
+
+    public boolean isDeletedByAdmin() {
+        return deletedByAdmin;
+    }
+
+    /** 운영자 삭제(소프트 삭제) */
+    public void markDeletedByAdmin() {
+        this.deletedByAdmin = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
     @OneToMany(mappedBy = "postLost",cascade = CascadeType.ALL)
     private List<SightCard> sightCards;
+
+    @OneToMany(mappedBy = "postLost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostLostReport> postLostReports = new ArrayList<>();
 
     @Builder
     private PostLost(List<String> realImage,
