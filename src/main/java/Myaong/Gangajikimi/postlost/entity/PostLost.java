@@ -5,6 +5,7 @@ import Myaong.Gangajikimi.common.enums.DogGender;
 import Myaong.Gangajikimi.common.enums.DogStatus;
 
 import Myaong.Gangajikimi.dogtype.entity.DogType;
+import Myaong.Gangajikimi.matchingpost.domain.Post;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
 import Myaong.Gangajikimi.postlostreport.entity.PostLostReport;
@@ -24,7 +25,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostLost extends BaseEntity {
+public class PostLost extends BaseEntity implements Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -67,6 +68,9 @@ public class PostLost extends BaseEntity {
     private Point lostSpot; // 분실 장소
 
     @Column
+    private String dogInfo;
+
+    @Column
     private String aiImage; // AI 사진 (URL 또는 파일 경로)
 
     @ElementCollection
@@ -105,7 +109,8 @@ public class PostLost extends BaseEntity {
                      Point lostSpot,
                      LocalDate lostDate,
                      LocalDateTime lostTime,
-                     String lostRegion){
+                     String lostRegion,
+                     String dogInfo){
         this.realImage = realImage;
         this.member = member;
         this.title = title;
@@ -119,6 +124,7 @@ public class PostLost extends BaseEntity {
         this.lostDate = lostDate;
         this.lostTime = lostTime;
         this.lostRegion = lostRegion;
+        this.dogInfo = dogInfo;
     }
 
     public static PostLost of(List<String> realImage,
@@ -132,7 +138,8 @@ public class PostLost extends BaseEntity {
                               Point lostSpot,
                               LocalDate lostDate,
                               LocalDateTime lostTime,
-                              String lostRegion){
+                              String lostRegion,
+                              String dogInfo){
         return PostLost.builder()
                 .realImage(realImage)
                 .member(member)
@@ -146,10 +153,15 @@ public class PostLost extends BaseEntity {
                 .lostDate(lostDate)
                 .lostTime(lostTime)
                 .lostRegion(lostRegion)
+                .dogInfo(dogInfo)
                 .build();
     }
 
-    public void update(PostLostUpdateRequest request, Point lostSpot, DogType dogType, String lostRegion) {
+    public void update(PostLostUpdateRequest request,
+                       Point lostSpot,
+                       DogType dogType,
+                       String lostRegion,
+                       String dogInfo) {
 
         DogGender dogGender = DogGender.valueOf(request.getDogGender());
 
@@ -164,6 +176,7 @@ public class PostLost extends BaseEntity {
         this.lostTime = request.getLostTime();
         this.lostSpot = lostSpot;
         this.lostRegion = lostRegion;
+        this.dogInfo = dogInfo;
     }
 
     public void updateImages(List<String> imageKeyNames) {
@@ -195,6 +208,7 @@ public class PostLost extends BaseEntity {
     public void updateStatus(DogStatus status) {
         this.status = status;
     }
+
 
     /**
      * 사용자가 첨부한 사진 중 첫 번째 사진을 반환

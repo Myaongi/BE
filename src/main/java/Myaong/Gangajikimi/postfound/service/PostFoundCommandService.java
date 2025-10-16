@@ -8,12 +8,15 @@ import Myaong.Gangajikimi.dogtype.service.DogTypeService;
 import Myaong.Gangajikimi.common.enums.Role;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
+import Myaong.Gangajikimi.fastapi.service.FastApiService;
+import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
 import Myaong.Gangajikimi.postfound.repository.PostFoundRepository;
 import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundRequest;
 import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundUpdateRequest;
+import Myaong.Gangajikimi.postfoundembedding.service.PostFoundEmbeddingService;
 import Myaong.Gangajikimi.s3file.service.S3Service;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,8 @@ public class PostFoundCommandService {
     private final KakaoApiService kakaoApiService;
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory;
+    private final FastApiService fastApiService;
+    private final PostFoundEmbeddingService postFoundEmbeddingService;
 
     public PostFound postPostFound(PostFoundRequest request, Member member, List<MultipartFile> images){
 
@@ -46,8 +51,21 @@ public class PostFoundCommandService {
 
         Point newPoint = geometryFactory.createPoint(new Coordinate(request.getFoundLongitude(), request.getFoundLatitude()));
 
-        // TODO: 주소 변환 API 연동 후 활성화 (예: "서울시 송파구")
         String foundRegion = kakaoApiService.getAddrFromKakaoApi(request.getFoundLongitude(), request.getFoundLatitude());
+
+        // FastAPI로 정제된 텍스트 가져오기 (실패 시 빈 문자열)
+        String dogInfo = fastApiService.normalizeText(
+                request.getDogType(),
+                request.getDogColor(),
+                request.getFeatures()
+        );
+
+        /*
+        TODO : 사용자가 견종 정보도 모르고 이미지도 null일 경우
+            사용자가 견종도 모르고 사진도 못 찍은 경우
+            우리가 견종을 만들어주려면 이미지를 받아야 함.
+            우리가 AI 이미지를 만들어주려면 견종 정보를 받아야 함.
+         */
 
         // 먼저 PostFound를 저장해서 ID를 얻음
         PostFound newPostFound = PostFound.of(null, // 이미지는 나중에 설정
@@ -60,7 +78,8 @@ public class PostFoundCommandService {
                 newPoint,
                 request.getFoundDate(),
                 request.getFoundTime(),
-                foundRegion);
+                foundRegion,
+                dogInfo);
 
         PostFound savedPostFound = postFoundRepository.save(newPostFound);
 
@@ -75,6 +94,24 @@ public class PostFoundCommandService {
 
         // 업로드된 이미지 keyNames로 PostFound 업데이트
         savedPostFound.updateImages(imageKeyNames);
+
+        // 텍스트, 이미지 임베딩 값 생성 및 저장
+        if (images != null && !images.isEmpty()) {
+            EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
+                    images.get(0),
+                    request.getDogType(),
+                    request.getDogColor(),
+                    request.getFeatures()
+            );
+            
+            if (embeddingResponse != null) {
+                postFoundEmbeddingService.saveEmbedding(
+                        savedPostFound,
+                        embeddingResponse.imageEmbeddingToArray(),
+                        embeddingResponse.textEmbeddingToArray()
+                );
+            }
+        }
 
         /**
          * 반경 3km 유저들에게 알림 전송
@@ -100,10 +137,26 @@ public class PostFoundCommandService {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
         }
 
+        // 세 가지 중 하나라도 수정되었다면 false, 모두 같으면 true (변수명과 로직이 반대였음)
+        boolean isDogInfoChanged =
+                !(postFound.getDogType().getType().equals(request.getDogType()) &&
+                postFound.getDogColor().equals(request.getDogColor()) &&
+                postFound.getContent().equals(request.getFeatures()));
+
         Point point = geometryFactory.createPoint(new Coordinate(request.getFoundLongitude(), request.getFoundLatitude()));
 
-        // TODO: 주소 변환 API 연동 후 활성화 (예: "서울시 송파구")
         String foundRegion = kakaoApiService.getAddrFromKakaoApi(request.getFoundLongitude(), request.getFoundLatitude());
+
+        String dogInfo = postFound.getDogInfo();
+
+        // 강아지 정보가 변경되었으면 다시 생성
+        if(isDogInfoChanged){
+            dogInfo = fastApiService.normalizeText(
+                    request.getDogType(),
+                    request.getDogColor(),
+                    request.getFeatures()
+            );
+        }
 
         // 기존 이미지 삭제 (S3에서)
         /*
@@ -140,7 +193,7 @@ public class PostFoundCommandService {
         
         // 4. 게시글 정보 업데이트 (이미지 제외)
         DogType dogType = dogTypeService.findByTypeName(request.getDogType());
-        postFound.update(request, point, dogType, foundRegion);
+        postFound.update(request, point, dogType, foundRegion, dogInfo);
         
 
 
@@ -190,10 +243,10 @@ public class PostFoundCommandService {
      */
     public PostFound updatePostFoundStatus(PostFound postFound, Member member, DogStatus dogStatus) {
         
-        // TODO: 권한 확인 - 본인만 상태 변경 가능
-        // if (!member.equals(postFound.getMember())) {
-        //     throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
-        // }
+        // 권한 확인 - 본인만 상태 변경 가능
+        //if (!member.equals(postFound.getMember())) {
+        //    throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
+        //}
 
         // 상태 업데이트
         postFound.updateStatus(dogStatus);

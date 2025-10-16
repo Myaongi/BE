@@ -25,7 +25,6 @@ public class PostFoundFacade {
 
     private final MemberService memberService;
     private final PostFoundCommandService postFoundCommandService;
-
     private final PostFoundQueryService postFoundQueryService;
     private final TempLocationService tempLocationService;
 

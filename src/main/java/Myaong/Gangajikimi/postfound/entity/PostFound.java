@@ -3,6 +3,7 @@ import Myaong.Gangajikimi.common.BaseEntity;
 import Myaong.Gangajikimi.common.enums.DogGender;
 import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.dogtype.entity.DogType;
+import Myaong.Gangajikimi.matchingpost.domain.Post;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundUpdateRequest;
 import Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport;
@@ -23,7 +24,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PostFound extends BaseEntity {
+public class PostFound extends BaseEntity implements Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -61,6 +62,9 @@ public class PostFound extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "geometry(Point,4326)")
     private Point foundSpot;
+
+    @Column(nullable = false)
+    private String dogInfo;
 
     @Column
     private String aiImage;
@@ -100,7 +104,8 @@ public class PostFound extends BaseEntity {
                       Point foundSpot,
                       LocalDate foundDate,
                       LocalDateTime foundTime,
-                      String foundRegion){
+                      String foundRegion,
+                      String dogInfo){
 
         this.realImage = realImage;
         this.member = member;
@@ -114,6 +119,7 @@ public class PostFound extends BaseEntity {
         this.foundDate = foundDate;
         this.foundTime = foundTime;
         this.foundRegion = foundRegion;
+        this.dogInfo = dogInfo;
     }
 
     public static PostFound of(List<String> realImage,
@@ -126,7 +132,8 @@ public class PostFound extends BaseEntity {
                                Point foundSpot,
                                LocalDate foundDate,
                                LocalDateTime foundTime,
-                               String foundRegion){
+                               String foundRegion,
+                               String dogInfo){
 
         return PostFound.builder()
                 .realImage(realImage)
@@ -140,10 +147,15 @@ public class PostFound extends BaseEntity {
                 .foundDate(foundDate)
                 .foundTime(foundTime)
                 .foundRegion(foundRegion)
+                .dogInfo(dogInfo)
                 .build();
     }
 
-    public void update(PostFoundUpdateRequest request, Point foundSpot, DogType dogType, String foundRegion) {
+    public void update(PostFoundUpdateRequest request,
+                       Point foundSpot,
+                       DogType dogType,
+                       String foundRegion,
+                       String dogInfo) {
 
         DogGender dogGender = DogGender.valueOf(request.getDogGender());
 
@@ -157,6 +169,7 @@ public class PostFound extends BaseEntity {
         this.foundTime = request.getFoundTime();
         this.foundSpot = foundSpot;
         this.foundRegion = foundRegion;
+        this.dogInfo = dogInfo;
     }
 
     public void updateImages(List<String> imageKeyNames) {
@@ -188,6 +201,7 @@ public class PostFound extends BaseEntity {
     public void updateStatus(DogStatus status) {
         this.status = status;
     }
+
 
     /**
      * 사용자가 첨부한 사진 중 첫 번째 사진을 반환

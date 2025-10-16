@@ -8,12 +8,15 @@ import Myaong.Gangajikimi.dogtype.service.DogTypeService;
 import Myaong.Gangajikimi.common.enums.Role;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
+import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
+import Myaong.Gangajikimi.fastapi.service.FastApiService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostRequest;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlostembedding.service.PostLostEmbeddingService;
 import Myaong.Gangajikimi.s3file.service.S3Service;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +41,12 @@ public class PostLostCommandService {
     private final KakaoApiService kakaoApiService;
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory;
+    private final FastApiService fastApiService;
+    private final PostLostEmbeddingService postLostEmbeddingService;
 
     public PostLost postPostLost(PostLostRequest request, Member member, List<MultipartFile> images){
+        long startTime = System.currentTimeMillis();
+        log.info("[PostLost 작성 시작] Member : {}", member.getMemberName());
 
         DogType dogType = dogTypeService.findByTypeName(request.getDogType());
         DogGender dogGender = DogGender.valueOf(request.getDogGender());
@@ -47,6 +54,13 @@ public class PostLostCommandService {
         Point newPoint = geometryFactory.createPoint(new Coordinate(request.getLostLongitude(), request.getLostLatitude()));
 
         String lostRegion = kakaoApiService.getAddrFromKakaoApi(request.getLostLongitude(), request.getLostLatitude());
+
+        // FastAPI로 정제된 텍스트 가져오기 (실패 시 빈 문자열)
+        String dogInfo = fastApiService.normalizeText(
+                request.getDogType(),
+                request.getDogColor(),
+                request.getFeatures()
+        );
 
         // 먼저 PostLost를 저장해서 ID를 얻음
         PostLost newPostLost = PostLost.of(null, // 이미지는 나중에 설정
@@ -60,7 +74,8 @@ public class PostLostCommandService {
                 newPoint,
                 request.getLostDate(),
                 request.getLostTime(),
-                lostRegion);
+                lostRegion,
+                dogInfo);
 
         PostLost savedPostLost = postLostRepository.save(newPostLost);
 
@@ -76,6 +91,24 @@ public class PostLostCommandService {
         // 업로드된 이미지 keyNames로 PostLost 업데이트
         savedPostLost.updateImages(imageKeyNames);
 
+        // 텍스트, 이미지 임베딩 값 생성 및 저장
+        if (images != null && !images.isEmpty()) {
+            EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
+                    images.get(0),
+                    request.getDogType(),
+                    request.getDogColor(),
+                    request.getFeatures()
+            );
+            
+            if (embeddingResponse != null) {
+                postLostEmbeddingService.saveEmbedding(
+                        savedPostLost,
+                        embeddingResponse.imageEmbeddingToArray(),
+                        embeddingResponse.textEmbeddingToArray()
+                );
+            }
+        }
+
         /**
          * 반경 3km 유저들에게 알림 전송
          * */
@@ -87,6 +120,9 @@ public class PostLostCommandService {
             PostType.LOST
         );
 
+        long endTime = System.currentTimeMillis();
+        log.info("[PostLost 작성 완료] PostLost ID: {}, 실행 시간: {}ms", savedPostLost.getId(), (endTime - startTime));
+
         return savedPostLost;
     }
 
@@ -97,10 +133,26 @@ public class PostLostCommandService {
             throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
         }
 
+        // 세 가지 중 하나라도 수정되었다면 true
+        boolean isDogInfoChanged =
+                !(postLost.getDogType().getType().equals(request.getDogType()) &&
+                postLost.getDogColor().equals(request.getDogColor()) &&
+                postLost.getContent().equals(request.getFeatures()));
+
         Point point = geometryFactory.createPoint(new Coordinate(request.getLostLongitude(), request.getLostLatitude()));
 
-        // TODO: 주소 변환 API 연동 후 활성화 (예: "서울시 송파구")
         String lostRegion = kakaoApiService.getAddrFromKakaoApi(request.getLostLongitude(), request.getLostLatitude());
+
+        String dogInfo = postLost.getDogInfo();
+
+        // 강아지 정보가 변경되었으면 다시 생성
+        if(isDogInfoChanged){
+            dogInfo = fastApiService.normalizeText(
+                    request.getDogType(),
+                    request.getDogColor(),
+                    request.getFeatures()
+            );
+        }
 
         // 1. 삭제할 이미지 처리
         List<String> deletedImageKeys = new ArrayList<>();
@@ -128,7 +180,7 @@ public class PostLostCommandService {
         
         // 4. 게시글 정보 업데이트 (이미지 제외)
         DogType dogType = dogTypeService.findByTypeName(request.getDogType());
-        postLost.update(request, point, dogType, lostRegion);
+        postLost.update(request, point, dogType, lostRegion, dogInfo);
 
         return postLost;
     }

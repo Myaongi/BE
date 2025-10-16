@@ -31,9 +31,15 @@ public class QPostFound extends EntityPathBase<PostFound> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
+    public final DateTimePath<java.time.LocalDateTime> deletedAt = createDateTime("deletedAt", java.time.LocalDateTime.class);
+
+    public final BooleanPath deletedByAdmin = createBoolean("deletedByAdmin");
+
     public final StringPath dogColor = createString("dogColor");
 
     public final EnumPath<Myaong.Gangajikimi.common.enums.DogGender> dogGender = createEnum("dogGender", Myaong.Gangajikimi.common.enums.DogGender.class);
+
+    public final StringPath dogInfo = createString("dogInfo");
 
     public final Myaong.Gangajikimi.dogtype.entity.QDogType dogType;
 
@@ -49,6 +55,8 @@ public class QPostFound extends EntityPathBase<PostFound> {
     public final NumberPath<Long> id = _super.id;
 
     public final Myaong.Gangajikimi.member.entity.QMember member;
+
+    public final ListPath<Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport, Myaong.Gangajikimi.postfoundreport.entity.QPostFoundReport> postFoundReports = this.<Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport, Myaong.Gangajikimi.postfoundreport.entity.QPostFoundReport>createList("postFoundReports", Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport.class, Myaong.Gangajikimi.postfoundreport.entity.QPostFoundReport.class, PathInits.DIRECT2);
 
     public final ListPath<String, StringPath> realImage = this.<String, StringPath>createList("realImage", String.class, StringPath.class, PathInits.DIRECT2);
 
