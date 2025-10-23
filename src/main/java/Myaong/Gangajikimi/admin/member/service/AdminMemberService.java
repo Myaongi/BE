@@ -3,6 +3,7 @@ package Myaong.Gangajikimi.admin.member.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import Myaong.Gangajikimi.s3file.service.S3Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class AdminMemberService {
 	private final PostFoundRepository foundRepo;
 	private final PostLostReportRepository lostReportRepo;
 	private final PostFoundReportRepository foundReportRepo;
+    private final S3Service s3Service;
 
 	// 전체 사용자 목록
 	public AdminMemberDto.PageResponse<AdminMemberDto.ListItem> getMembers(String query, Pageable pageable) {
@@ -101,7 +103,7 @@ public class AdminMemberService {
 					.title(postLost.getTitle())
 					.region(postLost.getLostRegion())
 					.createdAt(postLost.getCreatedAt())
-					.thumbnailUrl(resolvePostLostThumbnailUrl(postLost))
+					.thumbnailUrl(s3Service.generatePresignedUrl(resolvePostLostThumbnailUrl(postLost)))
 					.build());
 			}
 		}
@@ -113,7 +115,7 @@ public class AdminMemberService {
 					.title(postFound.getTitle())
 					.region(postFound.getFoundRegion())
 					.createdAt(postFound.getCreatedAt())
-					.thumbnailUrl(resolvePostFoundThumbnailUrl(postFound))
+					.thumbnailUrl(s3Service.generatePresignedUrl(resolvePostFoundThumbnailUrl(postFound)))
 					.build());
 			}
 		}

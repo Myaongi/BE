@@ -8,12 +8,15 @@ import Myaong.Gangajikimi.dogtype.service.DogTypeService;
 import Myaong.Gangajikimi.common.enums.Role;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
+import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
+import Myaong.Gangajikimi.fastapi.service.FastApiService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostRequest;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlostembedding.service.PostLostEmbeddingService;
 import Myaong.Gangajikimi.s3file.service.S3Service;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
 import lombok.RequiredArgsConstructor;
@@ -38,43 +41,104 @@ public class PostLostCommandService {
     private final KakaoApiService kakaoApiService;
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory;
+    private final FastApiService fastApiService;
+    private final PostLostEmbeddingService postLostEmbeddingService;
 
-    public PostLost postPostLost(PostLostRequest request, Member member, List<MultipartFile> images){
+    public PostLost postPostLost(PostLostRequest request, Member member, List<MultipartFile> images, MultipartFile aiImage){
+        long startTime = System.currentTimeMillis();
+        log.info("[PostLost 작성 시작] Member : {}", member.getMemberName());
 
-        DogType dogType = dogTypeService.findByTypeName(request.getDogType());
+        // 실제 이미지와 AI 이미지 중 하나는 무조건 들어옴 (프론트엔드에서 보장)
+        boolean hasRealImages = (images != null && !images.isEmpty());
+        boolean hasAiImage = (aiImage != null && !aiImage.isEmpty());
+
+        String processedDogType = request.getDogType();
+
+        DogType dogTypeEntity = dogTypeService.findByTypeName(processedDogType);
         DogGender dogGender = DogGender.valueOf(request.getDogGender());
 
         Point newPoint = geometryFactory.createPoint(new Coordinate(request.getLostLongitude(), request.getLostLatitude()));
 
         String lostRegion = kakaoApiService.getAddrFromKakaoApi(request.getLostLongitude(), request.getLostLatitude());
 
+        // FastAPI로 정제된 텍스트 가져오기 (실패 시 빈 문자열)
+        String dogInfo = fastApiService.normalizeText(
+                processedDogType,
+                request.getDogColor(),
+                request.getFeatures()
+        );
+
         // 먼저 PostLost를 저장해서 ID를 얻음
         PostLost newPostLost = PostLost.of(null, // 이미지는 나중에 설정
                 member,
                 request.getTitle(),
                 request.getDogName(),
-                dogType,
+                dogTypeEntity,
                 dogGender,
                 request.getDogColor(),
                 request.getFeatures(),
+                //TODO: AI 이미지도 null 처리해서 우선 생성해야 함
                 newPoint,
                 request.getLostDate(),
                 request.getLostTime(),
-                lostRegion);
+                lostRegion,
+                dogInfo);
 
         PostLost savedPostLost = postLostRepository.save(newPostLost);
+        log.info("[게시글 저장 완료] PostLost ID: {}", savedPostLost.getId());
 
-        // 이미지 업로드 및 keyName 목록 생성 (stream 사용)
+        // S3에 이미지 업로드 및 keyName 목록 생성
         List<String> imageKeyNames = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
+        String aiImageKeyName = null;
+
+        // 실제 이미지 또는 AI 이미지 중 하나는 무조건 존재
+        if (hasAiImage) {
+            // AI 이미지 업로드
+            aiImageKeyName = s3Service.upload(
+                    aiImage,
+                    "postLost",
+                    savedPostLost.getId().toString() + "_ai" // postId_ai 형태로 저장
+            );
+            log.info("[AI 이미지 업로드 완료] AI 이미지 keyName: {}", aiImageKeyName);
+            
+            savedPostLost.setAiImage(aiImageKeyName);
+            
+            // AI 이미지 임베딩 생성 및 저장
+            generateAndSaveEmbedding(savedPostLost,
+                    aiImage,
+                    processedDogType,
+                    request.getDogColor(),
+                    request.getFeatures(),
+                    "AI 이미지");
+                    
+        } else if (hasRealImages && images != null) {
+            // 실제 이미지들 업로드
             imageKeyNames = images.stream()
-                    .filter(image -> image != null && !image.isEmpty())
-                    .map(image -> s3Service.upload(image, "postLost", savedPostLost.getId().toString()))
+                    .filter(image -> image != null && !image.isEmpty()) // null 또는 빈 파일 필터링
+                    .map(image -> s3Service.upload(
+                            image,
+                            "postLost",
+                            savedPostLost.getId().toString()) // 폴더/게시글ID/파일명 형태로 저장
+                    )
                     .toList();
+            log.info("[실제 이미지 업로드 완료] 업로드된 이미지 수: {}", imageKeyNames.size());
+
+            // 업로드된 이미지 keyNames로 PostLost 업데이트
+            savedPostLost.updateImages(imageKeyNames);
+            
+            // 실제 이미지 임베딩 생성 및 저장
+            generateAndSaveEmbedding(savedPostLost,
+                    images.get(0),
+                    processedDogType,
+                    request.getDogColor(),
+                    request.getFeatures(),
+                    "실제 이미지");
+                    
+        } else {
+            // 이 경우는 발생하지 않아야 함 (프론트엔드에서 보장)
+            throw new GeneralException(ErrorCode.NO_IMAGE);
         }
 
-        // 업로드된 이미지 keyNames로 PostLost 업데이트
-        savedPostLost.updateImages(imageKeyNames);
 
         /**
          * 반경 3km 유저들에게 알림 전송
@@ -87,20 +151,61 @@ public class PostLostCommandService {
             PostType.LOST
         );
 
+        long endTime = System.currentTimeMillis();
+        log.info("[PostLost 작성 완료] PostLost ID: {}, 실행 시간: {}ms", savedPostLost.getId(), (endTime - startTime));
+
         return savedPostLost;
     }
 
-    public PostLost updatePostLost(PostLostUpdateRequest request, Member member, PostLost postLost, List<MultipartFile> images){
+    public PostLost updatePostLost(PostLostUpdateRequest request,
+                                   Member member,
+                                   PostLost postLost,
+                                   List<MultipartFile> images,
+                                   MultipartFile aiImage){
 
         // 권한 확인
         if(!member.equals(postLost.getMember())){
             throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
         }
 
+        // 세 가지 중 하나라도 수정되었다면 true
+        boolean isDogInfoChanged =
+                !(postLost.getDogType().getType().equals(request.getDogType()) &&
+                postLost.getDogColor().equals(request.getDogColor()) &&
+                postLost.getContent().equals(request.getFeatures()));
+
         Point point = geometryFactory.createPoint(new Coordinate(request.getLostLongitude(), request.getLostLatitude()));
 
-        // TODO: 주소 변환 API 연동 후 활성화 (예: "서울시 송파구")
         String lostRegion = kakaoApiService.getAddrFromKakaoApi(request.getLostLongitude(), request.getLostLatitude());
+
+        String dogInfo = postLost.getDogInfo();
+
+        // 강아지 정보가 변경되었으면 다시 생성
+        if(isDogInfoChanged){
+            dogInfo = fastApiService.normalizeText(
+                    request.getDogType(),
+                    request.getDogColor(),
+                    request.getFeatures()
+            );
+        }
+
+        // AI 이미지 업데이트 처리
+        String aiImageKeyName = null;
+        if (aiImage != null && !aiImage.isEmpty()) {
+            // 기존 AI 이미지가 있다면 삭제
+            if (postLost.getAiImage() != null && !postLost.getAiImage().isEmpty()) {
+                s3Service.deleteFile(postLost.getAiImage());
+                log.info("[기존 AI 이미지 삭제] keyName: {}", postLost.getAiImage());
+            }
+            
+            // 새 AI 이미지 업로드
+            aiImageKeyName = s3Service.upload(
+                    aiImage,
+                    "postLost",
+                    postLost.getId().toString() + "_ai"
+            );
+            log.info("[새 AI 이미지 업로드 완료] keyName: {}", aiImageKeyName);
+        }
 
         // 1. 삭제할 이미지 처리
         List<String> deletedImageKeys = new ArrayList<>();
@@ -128,7 +233,13 @@ public class PostLostCommandService {
         
         // 4. 게시글 정보 업데이트 (이미지 제외)
         DogType dogType = dogTypeService.findByTypeName(request.getDogType());
-        postLost.update(request, point, dogType, lostRegion);
+        postLost.update(request, point, dogType, lostRegion, dogInfo);
+        
+        // 5. AI 이미지가 있으면 PostLost에 AI 이미지 설정
+        if (aiImageKeyName != null) {
+            postLost.setAiImage(aiImageKeyName);
+            log.info("[AI 이미지 설정 완료] PostLost에 AI 이미지 keyName 설정: {}", aiImageKeyName);
+        }
 
         return postLost;
     }
@@ -169,6 +280,10 @@ public class PostLostCommandService {
             throw new GeneralException(ErrorCode.POST_NOT_FOUND);
         }
 
+        // TODO : 게시글의 이미지 삭제 로직 추가
+
+        // TODO : 게시글의 ai 이미지 삭제 로직 추가
+
         postLostRepository.delete(postLost);
     }
 
@@ -188,5 +303,35 @@ public class PostLostCommandService {
         return postLost;
     }
 
+    /**
+     * 이미지와 텍스트로 임베딩을 생성하고 저장하는 메서드
+     */
+    private void generateAndSaveEmbedding(PostLost postLost, 
+                                        MultipartFile image, 
+                                        String dogType, 
+                                        String dogColor, 
+                                        String features, 
+                                        String imageType) {
+        log.info("[임베딩 생성 시작] {} 사용", imageType);
+        
+        EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
+                image,
+                dogType,
+                dogColor,
+                features
+        );
+
+        // 임베딩 생성 성공 시 DB에 저장
+        if (embeddingResponse != null) {
+            postLostEmbeddingService.saveEmbedding(
+                    postLost,
+                    embeddingResponse.imageEmbeddingToArray(), // 이미지 임베딩 벡터
+                    embeddingResponse.textEmbeddingToArray()   // 텍스트 임베딩 벡터
+            );
+            log.info("[{} 임베딩 저장 완료]", imageType);
+        } else {
+            log.warn("[{} 임베딩 생성 실패] embeddingResponse가 null입니다.", imageType);
+        }
+    }
 
 }

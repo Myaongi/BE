@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.postlost.web.dto.response;
 
 import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
+import Myaong.Gangajikimi.common.util.TimeUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,11 +27,12 @@ public class PostLostHomeResponse {
     private LocalDateTime lostDateTime;
     private String image;
     private DogStatus status; // 강아지 상태
+    private String timeAgo; // 작성 시간 경과 표시
     
     @Builder
     private PostLostHomeResponse(Long id, String title, String dogType, String dogColor,
                                 String location, LocalDateTime lostDateTime,
-                                String image, DogStatus status) {
+                                String image, DogStatus status, String timeAgo) {
         this.id = id;
         this.title = title;
         this.dogType = dogType;
@@ -39,6 +41,7 @@ public class PostLostHomeResponse {
         this.lostDateTime = lostDateTime;
         this.image = image;
         this.status = status;
+        this.timeAgo = timeAgo;
     }
 
     /**
@@ -54,6 +57,7 @@ public class PostLostHomeResponse {
             .lostDateTime(postLost.getLostTime())
             .image(presignedImageUrl) // PresignedUrl 사용
             .status(postLost.getStatus())
+            .timeAgo(TimeUtil.getTimeAgo(postLost.getCreatedAt()))
             .build();
     }
 
@@ -71,6 +75,7 @@ public class PostLostHomeResponse {
             .image(postLost.getRealImage() != null && !postLost.getRealImage().isEmpty() 
                 ? postLost.getRealImage().get(0) : null) // S3 키 이름 그대로
             .status(postLost.getStatus())
+            .timeAgo(TimeUtil.getTimeAgo(postLost.getCreatedAt()))
             .build();
     }
 }

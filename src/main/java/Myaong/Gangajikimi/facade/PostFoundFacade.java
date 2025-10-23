@@ -17,6 +17,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -25,12 +27,14 @@ public class PostFoundFacade {
 
     private final MemberService memberService;
     private final PostFoundCommandService postFoundCommandService;
-
     private final PostFoundQueryService postFoundQueryService;
     private final TempLocationService tempLocationService;
 
     @Transactional
-    public PostFoundResponse postPostFound(PostFoundRequest request, Long memberId, List<MultipartFile> images){
+    public PostFoundResponse postPostFound(PostFoundRequest request,
+                                           Long memberId,
+                                           List<MultipartFile> images,
+                                           MultipartFile aiImage) {
 
         // Member 생성
         Member member = memberService.findMemberById(memberId);
@@ -38,7 +42,7 @@ public class PostFoundFacade {
         // TODO: 생성된 AI 이미지 추가
 
         // 게시글 생성
-        PostFound postFound = postFoundCommandService.postPostFound(request, member, images);
+        PostFound postFound = postFoundCommandService.postPostFound(request, member, images, aiImage);
 
         // 임시 좌표 저장
         tempLocationService.saveTempLocation(request.getFoundLongitude(), request.getFoundLatitude(), postFound);

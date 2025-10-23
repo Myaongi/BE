@@ -42,18 +42,20 @@ public class PostFoundController implements PostFoundControllerDocs {
     public ResponseEntity<GlobalResponse> postFound(
             @RequestPart("data") String dataJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @RequestPart(value = "aiImage", required = false) MultipartFile aiImage,
             @AuthenticationPrincipal CustomUserDetails userDetails) throws JsonProcessingException {
 
         Long memberId = userDetails.getId();
         
         PostFoundRequest request = objectMapper.readValue(dataJson, PostFoundRequest.class);
 
-        return GlobalResponse.onSuccess(SuccessCode.OK, postFoundFacade.postPostFound(request, memberId, images));
+        return GlobalResponse.onSuccess(SuccessCode.OK, postFoundFacade.postPostFound(request, memberId, images, aiImage));
     }
 
     @PatchMapping(value = "/{postFoundId}", consumes = "multipart/form-data")
     public ResponseEntity<GlobalResponse> updateFound(@RequestPart("data") String dataJson,
                                                      @RequestPart(value = "images", required = false) List<MultipartFile> images,
+                                                     @RequestPart(value = "aiImage", required = false) MultipartFile aiImage,
                                                      @PathVariable Long postFoundId,
                                                      @AuthenticationPrincipal CustomUserDetails userDetails) throws JsonProcessingException {
 
