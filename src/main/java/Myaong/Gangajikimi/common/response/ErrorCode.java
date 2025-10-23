@@ -53,6 +53,8 @@ public enum ErrorCode {
     CANNOT_REPORT_OWN_POST(HttpStatus.BAD_REQUEST, "POST403", "본인의 게시글은 신고할 수 없습니다."),
     ALREADY_REPORTED(HttpStatus.BAD_REQUEST, "POST404", "이미 신고한 게시글입니다."),
     NOT_EXIST_POSTTYPE(HttpStatus.NOT_FOUND, "POST405", "해당 게시글 카테고리는 존재하지 않습니다."),
+    NO_IMAGE(HttpStatus.BAD_REQUEST, "POST406", "실제 이미지, 생성형 이미지 중 하나는 존재해야 합니다."),
+    IO_ERROR_FOR_IMAGE(HttpStatus.INTERNAL_SERVER_ERROR, "POST407", "이미지 입/출력 처리 과정에서 오류가 발생했습니다."),
 
 
     //FILTER

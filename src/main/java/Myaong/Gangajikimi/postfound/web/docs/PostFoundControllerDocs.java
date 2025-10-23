@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PostFoundControllerDocs {
 
     @Operation(
-        summary = "습득물 게시글 작성",
+        summary = "발견했어요 게시글 작성",
         description = """
-            Multipart/form-data 형식으로 data(JSON)와 images(이미지 파일)를 전송합니다.
+            Multipart/form-data 형식으로 data(JSON)와 images(이미지 파일), ai image를 전송합니다.
             
             
             **작성 예시(data)**:
@@ -170,6 +170,7 @@ public interface PostFoundControllerDocs {
     ResponseEntity<GlobalResponse> postFound(
         String dataJson,
         java.util.List<org.springframework.web.multipart.MultipartFile> images,
+        org.springframework.web.multipart.MultipartFile aiImage,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -231,6 +232,7 @@ public interface PostFoundControllerDocs {
     ResponseEntity<GlobalResponse> updateFound(
         String dataJson,
         java.util.List<org.springframework.web.multipart.MultipartFile> images,
+        org.springframework.web.multipart.MultipartFile aiImage,
         @PathVariable Long postFoundId,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws com.fasterxml.jackson.core.JsonProcessingException;

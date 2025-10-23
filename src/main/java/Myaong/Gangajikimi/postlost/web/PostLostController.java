@@ -42,6 +42,7 @@ public class PostLostController implements PostLostControllerDocs {
     public ResponseEntity<GlobalResponse> postLost(
             @RequestPart("data") String dataJson,
             @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @RequestPart(value = "aiImage", required = false) MultipartFile aiImage,
             @AuthenticationPrincipal CustomUserDetails userDetails) throws JsonProcessingException {
 
         Long memberId = userDetails.getId();
@@ -49,12 +50,13 @@ public class PostLostController implements PostLostControllerDocs {
         PostLostRequest request = objectMapper.readValue(dataJson, PostLostRequest.class);
 
         return GlobalResponse.onSuccess(SuccessCode.OK,
-                postLostFacade.postPostLost(request, memberId, images));
+                postLostFacade.postPostLost(request, memberId, images, aiImage));
     }
 
     @PatchMapping(value = "/{postLostId}", consumes = "multipart/form-data")
     public ResponseEntity<GlobalResponse> updateLost(@RequestPart("data") String dataJson,
                                                      @RequestPart(value = "images", required = false) List<MultipartFile> images,
+                                                     @RequestPart(value = "aiImage", required = false) MultipartFile aiImage,
                                                      @PathVariable Long postLostId,
                                                      @AuthenticationPrincipal CustomUserDetails userDetails) throws JsonProcessingException {
 
@@ -64,7 +66,7 @@ public class PostLostController implements PostLostControllerDocs {
 
 
         return GlobalResponse.onSuccess(SuccessCode.OK,
-                postLostFacade.updatePostLost(request, memberId, postLostId, images));
+                postLostFacade.updatePostLost(request, memberId, postLostId, images, aiImage));
     }
 
     @DeleteMapping("/{postLostId}")

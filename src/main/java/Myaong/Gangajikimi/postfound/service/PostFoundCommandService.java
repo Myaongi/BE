@@ -44,78 +44,118 @@ public class PostFoundCommandService {
     private final FastApiService fastApiService;
     private final PostFoundEmbeddingService postFoundEmbeddingService;
 
-    public PostFound postPostFound(PostFoundRequest request, Member member, List<MultipartFile> images){
+    public PostFound postPostFound(PostFoundRequest request,
+                                   Member member,
+                                   List<MultipartFile> images,
+                                   MultipartFile aiImage) {
 
-        DogType dogType = dogTypeService.findByTypeName(request.getDogType());
+        long startTime = System.currentTimeMillis();
+        log.info("[PostFound 작성 시작] Member : {}", member.getMemberName());
+
+        // 실제 이미지와 AI 이미지 중 하나는 무조건 들어옴 (프론트엔드에서 보장)
+        boolean hasRealImages = (images != null && !images.isEmpty());
+        boolean hasAiImage = (aiImage != null && !aiImage.isEmpty());
+
+        String processedDogType = request.getDogType();
+
+        // DogType 엔티티 조회 (처리된 견종 정보로)
+        DogType dogType = dogTypeService.findByTypeName(processedDogType);
+        // 성별 정보 변환
         DogGender dogGender = DogGender.valueOf(request.getDogGender());
 
-        Point newPoint = geometryFactory.createPoint(new Coordinate(request.getFoundLongitude(), request.getFoundLatitude()));
+        // 발견 위치 Point 객체 생성
+        Point newPoint = geometryFactory.createPoint(
+                new Coordinate(request.getFoundLongitude(), request.getFoundLatitude())
+        );
 
-        String foundRegion = kakaoApiService.getAddrFromKakaoApi(request.getFoundLongitude(), request.getFoundLatitude());
+        // 좌표를 주소로 변환 (카카오 API 사용)
+        String foundRegion = kakaoApiService.getAddrFromKakaoApi(
+                request.getFoundLongitude(),
+                request.getFoundLatitude()
+        );
 
-        // FastAPI로 정제된 텍스트 가져오기 (실패 시 빈 문자열)
+        // FastAPI로 정제된 텍스트 생성 (매칭을 위한 정규화된 텍스트)
         String dogInfo = fastApiService.normalizeText(
-                request.getDogType(),
+                processedDogType,
                 request.getDogColor(),
                 request.getFeatures()
         );
 
-        /*
-        TODO : 사용자가 견종 정보도 모르고 이미지도 null일 경우
-            사용자가 견종도 모르고 사진도 못 찍은 경우
-            우리가 견종을 만들어주려면 이미지를 받아야 함.
-            우리가 AI 이미지를 만들어주려면 견종 정보를 받아야 함.
-         */
-
-        // 먼저 PostFound를 저장해서 ID를 얻음
-        PostFound newPostFound = PostFound.of(null, // 이미지는 나중에 설정
+        // PostFound 엔티티 생성 (이미지는 나중에 업데이트)
+        PostFound newPostFound = PostFound.of(
+                null, // 이미지는 S3 업로드 후 설정
                 member,
                 request.getTitle(),
                 dogType,
                 dogGender,
                 request.getDogColor(),
                 request.getFeatures(),
+                //TODO: AI 이미지도 null 처리해서 우선 생성해야 함
                 newPoint,
                 request.getFoundDate(),
                 request.getFoundTime(),
                 foundRegion,
-                dogInfo);
+                dogInfo
+        );
 
+        // DB에 저장하여 ID 생성
         PostFound savedPostFound = postFoundRepository.save(newPostFound);
+        log.info("[게시글 저장 완료] PostFound ID: {}", savedPostFound.getId());
 
-        // 이미지 업로드 및 keyName 목록 생성
+        // S3에 이미지 업로드 및 keyName 목록 생성
         List<String> imageKeyNames = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
-            imageKeyNames = images.stream()
-                    .filter(image -> image != null && !image.isEmpty())
-                    .map(image -> s3Service.upload(image, "postFound", savedPostFound.getId().toString()))
-                    .toList();
-        }
+        String aiImageKeyName = null;
 
-        // 업로드된 이미지 keyNames로 PostFound 업데이트
-        savedPostFound.updateImages(imageKeyNames);
-
-        // 텍스트, 이미지 임베딩 값 생성 및 저장
-        if (images != null && !images.isEmpty()) {
-            EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
-                    images.get(0),
-                    request.getDogType(),
-                    request.getDogColor(),
-                    request.getFeatures()
+        // 실제 이미지 또는 AI 이미지 중 하나는 무조건 존재
+        if (hasAiImage) {
+            // AI 이미지 업로드
+            aiImageKeyName = s3Service.upload(
+                    aiImage,
+                    "postFound",
+                    savedPostFound.getId().toString() + "_ai" // postId_ai 형태로 저장
             );
-            
-            if (embeddingResponse != null) {
-                postFoundEmbeddingService.saveEmbedding(
-                        savedPostFound,
-                        embeddingResponse.imageEmbeddingToArray(),
-                        embeddingResponse.textEmbeddingToArray()
-                );
-            }
+            log.info("[AI 이미지 업로드 완료] AI 이미지 keyName: {}", aiImageKeyName);
+
+            savedPostFound.setAiImage(aiImageKeyName);
+
+            // AI 이미지 임베딩 생성 및 저장
+            generateAndSaveEmbedding(savedPostFound,
+                    aiImage,
+                    processedDogType,
+                    request.getDogColor(),
+                    request.getFeatures(),
+                    "AI 이미지");
+
+        } else if (hasRealImages) {
+            // 실제 이미지들 업로드
+            imageKeyNames = images.stream()
+                    .filter(image -> image != null && !image.isEmpty()) // null 또는 빈 파일 필터링
+                    .map(image -> s3Service.upload(
+                            image,
+                            "postFound",
+                            savedPostFound.getId().toString()) // 폴더/게시글ID/파일명 형태로 저장
+                    )
+                    .toList();
+            log.info("[실제 이미지 업로드 완료] 업로드된 이미지 수: {}", imageKeyNames.size());
+
+            // 업로드된 이미지 keyNames로 PostFound 업데이트
+            savedPostFound.updateImages(imageKeyNames);
+
+            // 실제 이미지 임베딩 생성 및 저장
+            generateAndSaveEmbedding(savedPostFound,
+                    images.get(0),
+                    processedDogType,
+                    request.getDogColor(),
+                    request.getFeatures(),
+                    "실제 이미지");
+
+        } else {
+            // 이 경우는 발생하지 않아야 함 (프론트엔드에서 보장)
+            throw new GeneralException(ErrorCode.NO_IMAGE);
         }
 
-        /**
-         * 반경 3km 유저들에게 알림 전송
-         */
+        // 반경 3km 이내 유저들에게 실시간 알림 전송
+        log.info("[알림 전송 시작] 반경 3km 이내 유저에게 알림");
         notificationService.notifyNearbyUsers(
             savedPostFound.getId(),
             request.getFoundLatitude(),
@@ -123,6 +163,10 @@ public class PostFoundCommandService {
             member.getId(),
             PostType.FOUND
         );
+
+        long endTime = System.currentTimeMillis();
+        log.info("[PostFound 작성 완료] PostFound ID: {}, 실행 시간: {}ms",
+                savedPostFound.getId(), (endTime - startTime));
 
         return savedPostFound;
     }
@@ -158,12 +202,7 @@ public class PostFoundCommandService {
             );
         }
 
-        // 기존 이미지 삭제 (S3에서)
-        /*
-        if (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()) {
-            postFound.getRealImage().forEach(s3Service::deleteFile);
-        }
-         */
+        // TODO: AI image가 변경 되었다면 재업로드
 
         // 1. 삭제할 이미지 처리
         List<String> deletedImageKeys = new ArrayList<>();
@@ -235,6 +274,11 @@ public class PostFoundCommandService {
         if(!postFoundRepository.existsById(postFound.getId())){
             throw new GeneralException(ErrorCode.POST_NOT_FOUND);
         }
+
+        // TODO : 게시글의 이미지 삭제 로직 추가
+
+        // TODO : 게시글의 ai 이미지 삭제 로직 추가
+
         postFoundRepository.delete(postFound);
     }
 
@@ -252,6 +296,37 @@ public class PostFoundCommandService {
         postFound.updateStatus(dogStatus);
         
         return postFound;
+    }
+
+    /**
+     * 이미지와 텍스트로 임베딩을 생성하고 저장하는 메서드
+     */
+    private void generateAndSaveEmbedding(PostFound postFound, 
+                                        MultipartFile image, 
+                                        String dogType, 
+                                        String dogColor, 
+                                        String features, 
+                                        String imageType) {
+        log.info("[임베딩 생성 시작] {} 사용", imageType);
+        
+        EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
+                image,
+                dogType,
+                dogColor,
+                features
+        );
+
+        // 임베딩 생성 성공 시 DB에 저장
+        if (embeddingResponse != null) {
+            postFoundEmbeddingService.saveEmbedding(
+                    postFound,
+                    embeddingResponse.imageEmbeddingToArray(), // 이미지 임베딩 벡터
+                    embeddingResponse.textEmbeddingToArray()   // 텍스트 임베딩 벡터
+            );
+            log.info("[{} 임베딩 저장 완료]", imageType);
+        } else {
+            log.warn("[{} 임베딩 생성 실패] embeddingResponse가 null입니다.", imageType);
+        }
     }
 
 }

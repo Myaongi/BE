@@ -10,6 +10,7 @@ import Myaong.Gangajikimi.fastapi.dto.response.SimilarityScoreResponse;
 import Myaong.Gangajikimi.fastapi.dto.response.TextNormalizeResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,14 +23,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class FastApiService {
 
-    final String route = "http://localhost:8000";   //TODO: 추후 FastAPI IP 주소로 변경
+    @Value("${fastapi.base-url}")
+    private String fastApiBaseUrl;
 
     private final RestTemplate restTemplate; // AppConfig에 rootUri가 설정된 Bean
 
@@ -40,9 +41,12 @@ public class FastApiService {
      * @return FastAPI 서버가 예측한 강아지 품종 텍스트 (예: "골든 리트리버")
      * @throws IOException 이미지 파일 처리 중 발생할 수 있는 예외
      */
-    public String analyzeImage(MultipartFile imageFile) throws IOException {
+    public String analyzeImage(MultipartFile imageFile) {
 
-        final String apiPath = route + "/api/v1/dogbreed/";
+        final String apiPath = fastApiBaseUrl + "/api/v1/dogbreed/";
+
+        // 이미지를 처리할 타입
+        ByteArrayResource resource = null;
 
         // 1. HTTP Header 설정 (multipart/form-data)
         HttpHeaders headers = new HttpHeaders();
@@ -52,12 +56,16 @@ public class FastApiService {
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
 
         // MultipartFile에서 직접 바이트와 파일명을 가져와 ByteArrayResource로 만든다.
-        ByteArrayResource resource = new ByteArrayResource(imageFile.getBytes()) {
-            @Override
-            public String getFilename() {
-                return imageFile.getOriginalFilename();
-            }
-        };
+        try {
+            resource = new ByteArrayResource(imageFile.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return imageFile.getOriginalFilename();
+                }
+            };
+        } catch (IOException e) {
+            throw new GeneralException(ErrorCode.IO_ERROR_FOR_IMAGE);
+        }
 
         // FastAPI 코드: image: UploadFile = File(...) -> 'image' key 사용
         // FastAPI의 'image' 파라미터 이름과 일치해야 함
@@ -91,8 +99,8 @@ public class FastApiService {
      * @return 정제된 텍스트 (3개 문장을 '\n'로 join), 실패 시 빈 문자열
      */
     public String normalizeText(String breed, String colors, String features) {
-        
-        final String apiPath = route + "/api/v1/embed/normalize";
+
+        final String apiPath = fastApiBaseUrl + "/api/v1/embed/normalize";
 
         try {
             // 1. HTTP Header 설정 (application/json)
@@ -146,11 +154,11 @@ public class FastApiService {
             String features
     ) {
 
-        final String apiPath = route + "/api/v1/embed";
+        final String apiPath = fastApiBaseUrl + "/api/v1/embed";
 
         try {
             log.info("FastAPI 임베딩 생성 요청 - URL: {}, breed: {}", apiPath, breed);
-            
+
             // 1. HTTP Header 설정 (multipart/form-data)
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -182,8 +190,8 @@ public class FastApiService {
 
             EmbeddingResponse response = responseEntity.getBody();
             if (response != null) {
-                log.info("임베딩 생성 성공 - breed: {}, imageSize: {}, textSize: {}", 
-                        breed, 
+                log.info("임베딩 생성 성공 - breed: {}, imageSize: {}, textSize: {}",
+                        breed,
                         response.getImage() != null ? response.getImage().size() : 0,
                         response.getText() != null ? response.getText().size() : 0);
                 return response;
@@ -218,7 +226,7 @@ public class FastApiService {
             float[] embBText
     ) {
 
-        final String apiPath = route + "/api/v1/similarity/score";
+        final String apiPath = fastApiBaseUrl + "/api/v1/similarity/score";
 
         // 1. HTTP Header 설정 (application/json)
         HttpHeaders headers = new HttpHeaders();

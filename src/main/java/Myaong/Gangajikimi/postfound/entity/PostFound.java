@@ -202,10 +202,16 @@ public class PostFound extends BaseEntity implements Post {
         this.status = status;
     }
 
+    /**
+     * AI 이미지 설정
+     */
+    public void setAiImage(String aiImageKeyName) {
+        this.aiImage = aiImageKeyName;
+    }
 
     /**
      * 사용자가 첨부한 사진 중 첫 번째 사진을 반환
-    * */
+     * */
     public String firstRealImage(List<String> realImage){
         return realImage.get(0);
     }

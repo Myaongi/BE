@@ -68,6 +68,7 @@ public interface PostLostControllerDocs {
     ResponseEntity<GlobalResponse> postLost(
         String dataJson,
         java.util.List<org.springframework.web.multipart.MultipartFile> images,
+        org.springframework.web.multipart.MultipartFile aiImage,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -130,6 +131,7 @@ public interface PostLostControllerDocs {
     ResponseEntity<GlobalResponse> updateLost(
         String dataJson,
         java.util.List<org.springframework.web.multipart.MultipartFile> images,
+        org.springframework.web.multipart.MultipartFile aiImage,
         @PathVariable Long postLostId,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws com.fasterxml.jackson.core.JsonProcessingException;

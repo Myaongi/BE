@@ -27,7 +27,10 @@ public class PostLostFacade {
     private final PostLostQueryService postLostQueryService;
 
     @Transactional
-    public PostLostPostResponse postPostLost(PostLostRequest request, Long memberId, List<MultipartFile> images){
+    public PostLostPostResponse postPostLost(PostLostRequest request,
+                                             Long memberId,
+                                             List<MultipartFile> images,
+                                             MultipartFile aiImage){
 
         // Member 생성
         Member member = memberService.findMemberById(memberId);
@@ -35,7 +38,7 @@ public class PostLostFacade {
         // TODO: 생성된 AI 이미지 추가
 
         // 게시글 생성
-        PostLost postLost = postLostCommandService.postPostLost(request, member, images);
+        PostLost postLost = postLostCommandService.postPostLost(request, member, images, aiImage);
 
         // DB 저장
 
@@ -43,7 +46,11 @@ public class PostLostFacade {
     }
 
     @Transactional
-    public PostLostPostResponse updatePostLost(PostLostUpdateRequest request, Long memberId, Long postLostId, List<MultipartFile> images){
+    public PostLostPostResponse updatePostLost(PostLostUpdateRequest request,
+                                               Long memberId,
+                                               Long postLostId,
+                                               List<MultipartFile> images,
+                                               MultipartFile aiImage){
 
         // Member 조회
         Member member = memberService.findMemberById(memberId);
@@ -52,7 +59,7 @@ public class PostLostFacade {
         PostLost postLost = postLostQueryService.findPostLostById(postLostId);
 
         //업데이트 후 결과 반환
-        return PostLostPostResponse.from(postLostCommandService.updatePostLost(request, member, postLost, images));
+        return PostLostPostResponse.from(postLostCommandService.updatePostLost(request, member, postLost, images, aiImage));
     }
 
     @Transactional
