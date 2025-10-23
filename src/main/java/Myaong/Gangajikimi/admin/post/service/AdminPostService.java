@@ -7,6 +7,7 @@ import Myaong.Gangajikimi.postfound.entity.PostFound;
 import Myaong.Gangajikimi.postfound.repository.PostFoundRepository;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
+import Myaong.Gangajikimi.s3file.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ public class AdminPostService {
 
     private final PostLostRepository lostRepo;
     private final PostFoundRepository foundRepo;
+    private final S3Service s3Service;
 
     /**
      * 게시물 목록 조회 (type=ALL|FOUND|LOST, aiOnly, page/size)
@@ -131,7 +133,7 @@ public class AdminPostService {
                 .postId(postLost.getId())
                 .type("LOST")
                 .status(postLost.getStatus().getDescription()) // DogStatus
-                .thumbnailUrl(resolveThumb(postLost.getAiImage(), postLost.getRealImage()))
+                .thumbnailUrl(s3Service.generatePresignedUrl(resolveThumb(postLost.getAiImage(), postLost.getRealImage())))
                 .title(postLost.getTitle())
                 .authorName(postLost.getMember().getMemberName())
                 .createdAt(postLost.getCreatedAt())
@@ -144,7 +146,7 @@ public class AdminPostService {
                 .postId(postFound.getId())
                 .type("FOUND")
                 .status(postFound.getStatus().getDescription()) // DogStatus
-                .thumbnailUrl(resolveThumb(postFound.getAiImage(), postFound.getRealImage()))
+                .thumbnailUrl(s3Service.generatePresignedUrl(resolveThumb(postFound.getAiImage(), postFound.getRealImage())))
                 .title(postFound.getTitle())
                 .authorName(postFound.getMember().getMemberName())
                 .createdAt(postFound.getCreatedAt())
@@ -162,8 +164,8 @@ public class AdminPostService {
                 .authorName(postLost.getMember().getMemberName())
                 .createdAt(postLost.getCreatedAt())
                 .region(postLost.getLostRegion())
-                .aiImage(postLost.getAiImage())
-                .realImages(postLost.getRealImage())
+                .aiImage(s3Service.generatePresignedUrl(postLost.getAiImage()))
+                .realImages(s3Service.generatePresignedUrls(postLost.getRealImage()))
                 .dogName(s(postLost.getDogName()))
                 .breed(postLost.getDogType() != null ? postLost.getDogType().getType() : null)
                 .color(s(postLost.getDogColor()))
@@ -186,8 +188,8 @@ public class AdminPostService {
                 .authorName(postFound.getMember().getMemberName())
                 .createdAt(postFound.getCreatedAt())
                 .region(postFound.getFoundRegion())
-                .aiImage(postFound.getAiImage())
-                .realImages(postFound.getRealImage())
+                .aiImage(s3Service.generatePresignedUrl(postFound.getAiImage()))
+                .realImages(s3Service.generatePresignedUrls(postFound.getRealImage()))
                 .dogName(null) // 목격글엔 보통 이름 없음(필요하면 p.getDogName()으로 교체)
                 .breed(postFound.getDogType() != null ? postFound.getDogType().getType() : null)
                 .color(s(postFound.getDogColor()))
