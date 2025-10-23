@@ -142,9 +142,6 @@ public class S3Service {
 			.map(this::generatePresignedUrl)
 			.filter(Objects::nonNull) // null인 URL 제외
 			.toList();
-			
-		log.info("[S3Service] PresignedURL 목록 생성 완료 - 생성된 URL 수: {}", presignedUrls.size());
-		return presignedUrls;
 	}
 
     public String extractKeyFromUrl(String presignedUrl) {
