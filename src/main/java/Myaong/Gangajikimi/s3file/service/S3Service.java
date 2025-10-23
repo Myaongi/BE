@@ -105,32 +105,58 @@ public class S3Service {
 	/**
 	 * DB에 저장된 keyName으로부터 다운로드용 Presigned URL 생성
 	 * @param keyName DB에 저장된 S3 객체 키
-	 * @return 다운로드 가능한 Presigned URL
+	 * @return 다운로드 가능한 Presigned URL (keyName이 null이면 null 반환)
 	 */
 	public String generatePresignedUrl(String keyName) {
-		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-			.bucket(bucketName)
-			.key(keyName)
-			.build();
+		// keyName이 null이거나 빈 문자열이면 null 반환
+		if (keyName == null || keyName.isBlank()) {
+			log.info("[S3Service] keyName이 null이거나 빈 문자열입니다. null 반환");
+			return null;
+		}
+		
+		try {
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.bucket(bucketName)
+				.key(keyName)
+				.build();
 
-		GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-			.signatureDuration(Duration.ofMinutes(60)) // 1시간 유효
-			.getObjectRequest(getObjectRequest)
-			.build();
+			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+				.signatureDuration(Duration.ofMinutes(60)) // 1시간 유효
+				.getObjectRequest(getObjectRequest)
+				.build();
 
-		URL presignedUrl = s3Presigner.presignGetObject(presignRequest).url();
-		return presignedUrl.toString();
+			URL presignedUrl = s3Presigner.presignGetObject(presignRequest).url();
+			String result = presignedUrl.toString();
+			log.info("[S3Service] PresignedURL 생성 완료 - keyName: {}", keyName);
+			return result;
+		} catch (Exception e) {
+			log.error("[S3Service] PresignedURL 생성 실패 - keyName: {}, error: {}", keyName, e.getMessage());
+			// 예외 발생 시 null 반환 (에러 대신 null로 처리)
+			return null;
+		}
 	}
 
 	/**
 	 * 여러 개의 keyName에 대해 다운로드용 Presigned URL 목록 생성
 	 * @param keyNames DB에 저장된 S3 객체 키 목록
-	 * @return 다운로드 가능한 Presigned URL 목록
+	 * @return 다운로드 가능한 Presigned URL 목록 (null 제외)
 	 */
 	public List<String> generatePresignedUrls(List<String> keyNames) {
-		return keyNames.stream()
+		// keyNames가 null이면 빈 리스트 반환
+		if (keyNames == null || keyNames.isEmpty()) {
+			log.info("[S3Service] keyNames가 null이거나 빈 리스트입니다. 빈 리스트 반환");
+			return List.of();
+		}
+		
+		log.info("[S3Service] PresignedURL 목록 생성 시작 - keyNames 수: {}", keyNames.size());
+		
+		List<String> presignedUrls = keyNames.stream()
 			.map(this::generatePresignedUrl)
+			.filter(Objects::nonNull) // null인 URL 제외
 			.toList();
+			
+		log.info("[S3Service] PresignedURL 목록 생성 완료 - 생성된 URL 수: {}", presignedUrls.size());
+		return presignedUrls;
 	}
 
     public String extractKeyFromUrl(String presignedUrl) {
@@ -187,5 +213,4 @@ public class S3Service {
 		}
 		return fileName.substring(dotIdx + 1);
 	}
-
 }
