@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Uri;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -106,9 +105,14 @@ public class S3Service {
 	/**
 	 * DB에 저장된 keyName으로부터 다운로드용 Presigned URL 생성
 	 * @param keyName DB에 저장된 S3 객체 키
-	 * @return 다운로드 가능한 Presigned URL
+	 * @return 다운로드 가능한 Presigned URL (keyName이 null이면 null 반환)
 	 */
 	public String generatePresignedUrl(String keyName) {
+		// keyName이 null이거나 빈 문자열이면 null 반환
+		if (keyName == null || keyName.isBlank()) {
+			return null;
+		}
+		
 		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
 			.bucket(bucketName)
 			.key(keyName)
@@ -126,11 +130,17 @@ public class S3Service {
 	/**
 	 * 여러 개의 keyName에 대해 다운로드용 Presigned URL 목록 생성
 	 * @param keyNames DB에 저장된 S3 객체 키 목록
-	 * @return 다운로드 가능한 Presigned URL 목록
+	 * @return 다운로드 가능한 Presigned URL 목록 (null 제외)
 	 */
 	public List<String> generatePresignedUrls(List<String> keyNames) {
+		// keyNames가 null이면 빈 리스트 반환
+		if (keyNames == null || keyNames.isEmpty()) {
+			return List.of();
+		}
+		
 		return keyNames.stream()
 			.map(this::generatePresignedUrl)
+			.filter(Objects::nonNull) // null인 URL 제외
 			.toList();
 	}
 
