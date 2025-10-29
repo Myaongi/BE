@@ -20,6 +20,7 @@ public class AdminReportDto {
 		private Long reportId;        // 신고 내역 id
 		private String type;          // LOST / FOUND
 		private String reason;        // 신고 사유, reportType name()
+		private Long targetPostId;
 		private String targetTitle;   // 신고 대상 글 제목
 		private String reporterName;  // 신고자
 		private LocalDateTime reportedAt;
