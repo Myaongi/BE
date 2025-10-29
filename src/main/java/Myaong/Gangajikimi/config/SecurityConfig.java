@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("GET", "/api/lost-posts", "/api/found-posts").permitAll() // 게시글 목록 조회 공개
                         .requestMatchers("GET", "/api/lost-posts/*", "/api/found-posts/*").permitAll() // 게시글 상세 조회 공개
                         .requestMatchers(HttpMethod.OPTIONS, "/api/admin/**").permitAll() // CORS preflight 요청 허용
-                        //.requestMatchers("/api/admin/**").hasRole("ADMIN") //테스트를 위해 주석
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //테스트를 위해 주석
                         .requestMatchers("/test-chat.html").permitAll()
                         .anyRequest().authenticated()
                 )
