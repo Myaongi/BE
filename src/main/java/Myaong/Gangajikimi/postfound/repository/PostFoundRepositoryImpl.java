@@ -148,4 +148,37 @@ public class PostFoundRepositoryImpl implements PostFoundRepositoryCustom {
         // maxDistanceKm를 미터(m) 단위로 변환하여 비교 (loe = less than or equal)
         return distance.loe(maxDistanceKm * 1000.0);
     }
+
+    @Override
+    public List<PostFound> findWithinRadius(Point centerPoint, double radiusKm) {
+        // 반경을 미터 단위로 변환
+        double radiusMeters = radiusKm * 1000.0;
+        
+        // 거리 계산 표현식
+        NumberExpression<Double> distance = Expressions.numberTemplate(Double.class, 
+            "ST_DistanceSphere({0}, {1})", postFound.foundSpot, centerPoint);
+        
+        return queryFactory
+                .selectFrom(postFound)
+                .where(
+                    postFound.deletedByAdmin.isFalse()
+                    .and(distance.loe(radiusMeters))
+                )
+                .orderBy(distance.asc()) // 거리순으로 정렬
+                .fetch();
+    }
+
+    @Override
+    public Double calculateDistance(Point point1, Point point2) {
+        NumberExpression<Double> distance = Expressions.numberTemplate(Double.class, 
+            "ST_DistanceSphere({0}, {1})", point1, point2);
+        
+        Double distanceMeters = queryFactory
+                .select(distance)
+                .from()
+                .fetchOne();
+        
+        // 미터를 킬로미터로 변환
+        return distanceMeters != null ? distanceMeters / 1000.0 : null;
+    }
 }

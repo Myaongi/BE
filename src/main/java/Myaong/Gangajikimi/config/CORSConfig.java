@@ -14,7 +14,7 @@ public class CORSConfig implements WebMvcConfigurer {
         // 모든 경로에 대하여
         registry.addMapping("/**")
                 // Origin이 http:localhost:3000에 대해.
-                .allowedOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:3001")
+                .allowedOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:3001", "http://192.168.35.185:3000", "https://fe-admin-myaongi.vercel.app/")
                 // GET, POST, PUT, PATCH, DELETE, OPTIONS 메서드를 허용한다.
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

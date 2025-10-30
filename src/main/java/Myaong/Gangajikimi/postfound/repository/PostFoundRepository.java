@@ -14,6 +14,8 @@ public interface PostFoundRepository extends JpaRepository<PostFound, Long>, Pos
     
     // 메인 페이지용 게시글 조회 (최신순)
     Page<PostFound> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    List<PostFound> findAllByIdIn(List<Long> ids);
     
     // 마이페이지용 내 게시글 조회 (최신순)
     Page<PostFound> findByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(Long memberId, Pageable pageable);

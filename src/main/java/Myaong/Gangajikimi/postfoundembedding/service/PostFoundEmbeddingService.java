@@ -20,7 +20,7 @@ public class PostFoundEmbeddingService {
      * @param postFound 게시글
      * @param imageEmbedding 이미지 임베딩 (512차원)
      * @param textEmbedding 텍스트 임베딩 (512차원)
-     * @return 저장된 PostFoundEmbedding
+     * @return 저장된 PostLostEmbedding
      */
     @Transactional
     public PostFoundEmbedding saveEmbedding(PostFound postFound, float[] imageEmbedding, float[] textEmbedding) {
@@ -30,6 +30,12 @@ public class PostFoundEmbeddingService {
         
         log.info("PostFound 임베딩 저장 완료 - embeddingId: {}", savedEmbedding.getId());
         return savedEmbedding;
+    }
+
+    public PostFoundEmbedding findPostFoundEmbeddingByPostFound(PostFound postFound) {
+
+        return postFoundEmbeddingRepository.findPostFoundEmbeddingByPostFoundId(postFound.getId());
+
     }
 
 }
