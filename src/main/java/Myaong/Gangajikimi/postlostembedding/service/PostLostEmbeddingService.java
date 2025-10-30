@@ -32,4 +32,10 @@ public class PostLostEmbeddingService {
         return savedEmbedding;
     }
 
+    public PostLostEmbedding findPostLostEmbeddingByPostLost(PostLost postLost) {
+
+        return postLostEmbeddingRepository.findPostLostEmbeddingByPostLostId(postLost.getId());
+
+    }
+
 }

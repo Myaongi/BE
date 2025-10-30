@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import org.locationtech.jts.geom.Point;
 
 @Service
 @RequiredArgsConstructor
@@ -129,6 +130,32 @@ public class PostFoundQueryService {
         boolean hasNext = foundPosts.hasNext();
         
         return PageResponse.of(foundResponses, hasNext);
+    }
+
+    public List<PostFound> findAllByIdIn(List<Long> ids) {
+        return postFoundRepository.findAllByIdIn(ids);
+    }
+
+    /**
+     * 매칭을 위한 Found Post 목록 조회 (모든 활성 게시글)
+     */
+    public List<PostFound> findAllForMatching() {
+        return postFoundRepository.findByDeletedByAdminFalseOrderByCreatedAtDesc(
+                Pageable.unpaged()).getContent();
+    }
+
+    /**
+     * 초기 탐색 반경 내의 Found Post 조회 (QueryDSL 사용)
+     */
+    public List<PostFound> findWithinInitialRadius(Point centerPoint, double radiusKm) {
+        return postFoundRepository.findWithinRadius(centerPoint, radiusKm);
+    }
+
+    /**
+     * 두 좌표 간의 거리 계산 (km 단위)
+     */
+    public Double calculateDistance(Point point1, Point point2) {
+        return postFoundRepository.calculateDistance(point1, point2);
     }
 
 }

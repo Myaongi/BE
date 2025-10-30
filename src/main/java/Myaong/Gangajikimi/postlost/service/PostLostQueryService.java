@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import org.locationtech.jts.geom.Point;
 
 @Service
 @RequiredArgsConstructor
@@ -131,6 +132,29 @@ public class PostLostQueryService {
         boolean hasNext = lostPosts.hasNext();
         
         return PageResponse.of(lostResponses, hasNext);
+    }
+
+
+    /**
+     * 매칭을 위한 Lost Post 목록 조회 (모든 활성 게시글)
+     */
+    public List<PostLost> findAllForMatching() {
+        return postLostRepository.findByDeletedByAdminFalseOrderByCreatedAtDesc(
+                Pageable.unpaged()).getContent();
+    }
+
+    /**
+     * 초기 탐색 반경 내의 Lost Post 조회 (QueryDSL 사용)
+     */
+    public List<PostLost> findWithinInitialRadius(Point centerPoint, double radiusKm) {
+        return postLostRepository.findWithinRadius(centerPoint, radiusKm);
+    }
+
+    /**
+     * 두 좌표 간의 거리 계산 (km 단위)
+     */
+    public Double calculateDistance(Point point1, Point point2) {
+        return postLostRepository.calculateDistance(point1, point2);
     }
 
 }
