@@ -1,7 +1,6 @@
 package Myaong.Gangajikimi.postlostembedding.entity;
 
 import Myaong.Gangajikimi.common.BaseEntity;
-import Myaong.Gangajikimi.common.converter.FloatArrayVectorConverter;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
