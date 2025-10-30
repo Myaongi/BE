@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "records": [
+    {
+      "filePath": "/ChatRoomListResponse.java",
+      "timestamp": 1761787147949,
+      "startOffset": 688,
+      "endOffset": 708,
+      "codeContent": "IntellijIdeaRulezzz ",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/ChatRoomRepositoryImpl.java",
+      "timestamp": 1761787601717,
+      "startOffset": 3355,
+      "endOffset": 3375,
+      "codeContent": "IntellijIdeaRulezzz ",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/chatroom/repository/ChatRoomRepositoryImpl.java",
+      "timestamp": 1761787725342,
+      "startOffset": 49,
+      "endOffset": 80,
+      "codeContent": "import java.time.LocalDateTime;",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/ChatRoomRepositoryImpl.java",
+      "timestamp": 1761787975763,
+      "startOffset": 2538,
+      "endOffset": 2567,
+      "codeContent": "\tㅔㅐㄴIntellijIdeaRulezzz \n\t\t\t\t",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 2
+    }
+  ],
+  "toolStats": {
+    "AI Assistant": {
+      "usageCount": 4,
+      "totalLines": 5
+    }
+  }
+}

@@ -1,5 +1,6 @@
 package Myaong.Gangajikimi.chatroom.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +64,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 			String postTitle = null;
 			String postImageUrl = null;
 			String postRegion = null;
+			LocalDateTime postUserTime = null;
 
 			if (room.getPostType() == PostType.LOST) {
 				var lost = queryFactory.selectFrom(qLost)
@@ -77,6 +79,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						postImageUrl = lost.firstRealImage(lost.getRealImage());
 					}
 					postRegion = lost.getLostRegion();
+					postUserTime = lost.getLostTime();
 				}
 			} else {
 				var found = queryFactory.selectFrom(qFound)
@@ -91,6 +94,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 						postImageUrl = found.firstRealImage(found.getRealImage());
 					}
 					postRegion = found.getFoundRegion();
+					postUserTime = found.getFoundTime();
 				}
 			}
 
@@ -106,6 +110,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.postTitle(postTitle)
 				.postImageUrl(postImageUrl)
 				.postRegion(postRegion)
+				.postUserTime(postUserTime)
 				.build();
 		}).toList();
 	}
