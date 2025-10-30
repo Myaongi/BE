@@ -41,7 +41,7 @@ public class FastApiService {
      * @return FastAPI 서버가 예측한 강아지 품종 텍스트 (예: "골든 리트리버")
      * @throws IOException 이미지 파일 처리 중 발생할 수 있는 예외
      */
-    public String analyzeImage(MultipartFile imageFile) {
+    public String analyzeImage(MultipartFile imageFile) throws IOException {
 
         final String apiPath = fastApiBaseUrl + "/api/v1/dogbreed/";
 

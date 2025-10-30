@@ -3,6 +3,8 @@ package Myaong.Gangajikimi.postfoundembedding.entity;
 import Myaong.Gangajikimi.common.BaseEntity;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,9 +18,11 @@ public class PostFoundEmbedding extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL)
     private PostFound postFound;
 
+    @JdbcTypeCode(SqlTypes.VECTOR)
     @Column(columnDefinition = "vector(512)")
     private float[] imageEmbedding;
 
+    @JdbcTypeCode(SqlTypes.VECTOR)
     @Column(columnDefinition = "vector(512)")
     private float[] textEmbedding;
 
