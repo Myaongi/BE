@@ -1,4 +1,4 @@
-package Myaong.Gangajikimi.dogtype.web.dto;
+package Myaong.Gangajikimi.dogtype.web.dto.response;
 
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 

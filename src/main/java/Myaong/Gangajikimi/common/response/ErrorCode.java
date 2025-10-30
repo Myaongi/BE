@@ -19,6 +19,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH401", "AccessToken 유효 기간이 만료되었습니다."),
     TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "AUTH402", "토큰을 찾을 수 없습니다."),
     INVALIDATE_PASSWORD(HttpStatus.UNAUTHORIZED, "AUTH403", "비밀번호가 일치하지 않아요."),
+    INVALID_ACCESS(HttpStatus.UNAUTHORIZED, "AUTH404", "접근 권한이 없습니다."),
 
     // MEMBER
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER400", "존재하지 않는 회원 ID입니다."),
@@ -83,7 +84,10 @@ public enum ErrorCode {
 
     //ADMIN
     CANNOT_DELETE_POST(HttpStatus.NOT_FOUND, "DELETE400", "삭제 처리가 되지 않았습니다."),
-    CANNOT_ACCESS_DETAIL(HttpStatus.NOT_FOUND, "DETAIL400", "게시글 상세 정보를 조회할 수 없습니다.");
+    CANNOT_ACCESS_DETAIL(HttpStatus.NOT_FOUND, "DETAIL400", "게시글 상세 정보를 조회할 수 없습니다."),
+
+    //MATCHING
+    NO_MATCHING_FOUND(HttpStatus.NOT_FOUND, "MATCHING400", "매칭 기록이 존재하지 않습니다.");
 
 
 

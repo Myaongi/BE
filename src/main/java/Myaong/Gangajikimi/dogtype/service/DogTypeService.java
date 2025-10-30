@@ -4,11 +4,14 @@ import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 import Myaong.Gangajikimi.dogtype.repository.DogTypeRepository;
-import Myaong.Gangajikimi.dogtype.web.dto.DogTypeAutocompleteResponse;
+import Myaong.Gangajikimi.dogtype.web.dto.response.DogTypeAutocompleteResponse;
+import Myaong.Gangajikimi.fastapi.service.FastApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 public class DogTypeService {
     
     private final DogTypeRepository dogTypeRepository;
+    private final FastApiService fastApiService;
     
     /**
      * 견종 이름으로 DogType 엔티티 조회
@@ -74,4 +78,15 @@ public class DogTypeService {
                 .map(DogTypeAutocompleteResponse::from)
                 .collect(Collectors.toList());
     }
+
+    public String getDogBreed(MultipartFile dogImage) {
+
+        try{
+            return fastApiService.analyzeImage(dogImage);
+        } catch (IOException e) {
+            throw new GeneralException(ErrorCode.DOG_TYPE_NOT_FOUND);
+        }
+
+    }
+
 }

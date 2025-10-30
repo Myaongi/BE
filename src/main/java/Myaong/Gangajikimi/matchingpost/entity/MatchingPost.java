@@ -22,28 +22,21 @@ public class MatchingPost extends BaseEntity {
     @JoinColumn(name = "post_found_id", nullable = false)
     private PostFound postFound; // 목격했어요 게시글
 
-    @Column(name = "matching_ratio", nullable = false)
-    private Double matchingRatio; // 매칭률
+    @Column(name = "matching_ratio", nullable = true)
+    private Float matchingRatio; // 매칭률
 
     @Builder
-    private MatchingPost(PostLost postLost, PostFound postFound, Double matchingRatio) {
+    private MatchingPost(PostLost postLost, PostFound postFound, Float matchingRatio) {
         this.postLost = postLost;
         this.postFound = postFound;
         this.matchingRatio = matchingRatio;
     }
 
-    public static MatchingPost of(PostLost postLost, PostFound postFound, Double matchingRatio) {
+    public static MatchingPost of(PostLost postLost, PostFound postFound, Float matchingRatio) {
         return MatchingPost.builder()
                 .postLost(postLost)
                 .postFound(postFound)
                 .matchingRatio(matchingRatio)
                 .build();
-    }
-
-    /**
-     * 매칭률 업데이트
-     */
-    public void updateMatchingRatio(Double matchingRatio) {
-        this.matchingRatio = matchingRatio;
     }
 }

@@ -61,7 +61,13 @@ public class PostFoundCommandService {
         // DogType 엔티티 조회 (처리된 견종 정보로)
         DogType dogType = dogTypeService.findByTypeName(processedDogType);
         // 성별 정보 변환
-        DogGender dogGender = DogGender.valueOf(request.getDogGender());
+        DogGender dogGender;
+        try {
+            dogGender = DogGender.valueOf(request.getDogGender().toUpperCase());
+        } catch (Exception e) {
+            // 한글 '모름', 그 외 잘못된 값 모두 NEUTRAL로 처리
+            dogGender = DogGender.NEUTRAL;
+        }
 
         // 발견 위치 Point 객체 생성
         Point newPoint = geometryFactory.createPoint(
