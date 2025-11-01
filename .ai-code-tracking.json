@@ -44,12 +44,155 @@
       "aiTool": "AI Assistant",
       "detectionMethod": "REALTIME_SPEED_ANALYSIS",
       "lineCount": 2
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/entity/Notification.java",
+      "timestamp": 1761997091033,
+      "startOffset": 1125,
+      "endOffset": 1198,
+      "codeContent": "@Column(name \u003d \"matched_post_title\")\n    private String matchedPostTitle;",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 2
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/converter/NotificationConverter.java",
+      "timestamp": 1761997798536,
+      "startOffset": 1093,
+      "endOffset": 1186,
+      "codeContent": "if (e.getMatchedPostTitle() !\u003d null) params.put(\"matchedPostTitle\", e.getMatchedPostTitle());",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/service/NotificationService.java",
+      "timestamp": 1761998036951,
+      "startOffset": 2586,
+      "endOffset": 3384,
+      "codeContent": "/**\n     * FOUND 작성자에게: 고정 메시지 + 상대(LOST) 정보\n     */\n    @Transactional\n    public void notifyNewMatchForFoundOwner(PostFound found, PostLost matchedLost) {\n        if (found \u003d\u003d null || matchedLost \u003d\u003d null) return;\n\n        Long receiverId \u003d found.getMember().getId();\n        Notification noti \u003d Notification.builder()\n                .receiverId(receiverId)\n                .type(NotificationType.NEW_MATCH)\n                .message(\"내 게시글에 매칭된 글이 있어요! 확인해볼까요?\") // 고정문구\n                .isRead(false)\n                .postId(matchedLost.getId())\n                .postType(PostType.LOST) // 상대 타입\n                .matchedPostTitle(matchedLost.getTitle())\n                .build();\n\n        try { notificationRepository.save(noti); }\n        catch (DataIntegrityViolationException ignore) {}\n    }",
+      "aiProbability": 95,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 21
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/service/NotificationService.java",
+      "timestamp": 1761998037306,
+      "startOffset": 2707,
+      "endOffset": 2742,
+      "codeContent": "Myaong.Gangajikimi.postlost.entity.",
+      "aiProbability": 70,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/service/NotificationService.java",
+      "timestamp": 1761998037323,
+      "startOffset": 929,
+      "endOffset": 980,
+      "codeContent": "import Myaong.Gangajikimi.postlost.entity.PostLost;",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/service/NotificationService.java",
+      "timestamp": 1761998037507,
+      "startOffset": 2742,
+      "endOffset": 2778,
+      "codeContent": "Myaong.Gangajikimi.postfound.entity.",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/notification/service/NotificationService.java",
+      "timestamp": 1761998037525,
+      "startOffset": 929,
+      "endOffset": 982,
+      "codeContent": "import Myaong.Gangajikimi.postfound.entity.PostFound;",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/NotificationService.java",
+      "timestamp": 1762012463311,
+      "startOffset": 3579,
+      "endOffset": 3599,
+      "codeContent": "IntellijIdeaRulezzz ",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/matchingpost/service/MatchingPostService.java",
+      "timestamp": 1762012624744,
+      "startOffset": 5137,
+      "endOffset": 5273,
+      "codeContent": "for (MatchingPost m : result) {\n            notificationService.notifyNewMatchForLostOwner(m.getPostLost(), m.getPostFound());\n        }",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 3
+    },
+    {
+      "filePath": "/MatchingPostService.java",
+      "timestamp": 1762012632546,
+      "startOffset": 2058,
+      "endOffset": 2082,
+      "codeContent": "PrivIntellijIdeaRulezzz ",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/matchingpost/service/MatchingPostService.java",
+      "timestamp": 1762012639853,
+      "startOffset": 2072,
+      "endOffset": 2112,
+      "codeContent": "Myaong.Gangajikimi.notification.service.",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/matchingpost/service/MatchingPostService.java",
+      "timestamp": 1762012639865,
+      "startOffset": 743,
+      "endOffset": 810,
+      "codeContent": "import Myaong.Gangajikimi.notification.service.NotificationService;",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 1
+    },
+    {
+      "filePath": "/Users/wonhee/Documents/study/school3/final_project/java/BE/src/main/java/Myaong/Gangajikimi/matchingpost/service/MatchingPostService.java",
+      "timestamp": 1762012869227,
+      "startOffset": 3936,
+      "endOffset": 4072,
+      "codeContent": "for (MatchingPost m : result) {\n            notificationService.notifyNewMatchForLostOwner(m.getPostLost(), m.getPostFound());\n        }",
+      "aiProbability": 90,
+      "aiTool": "AI Assistant",
+      "detectionMethod": "REALTIME_SPEED_ANALYSIS",
+      "lineCount": 3
     }
   ],
   "toolStats": {
     "AI Assistant": {
-      "usageCount": 4,
-      "totalLines": 5
+      "usageCount": 17,
+      "totalLines": 43
     }
   }
 }

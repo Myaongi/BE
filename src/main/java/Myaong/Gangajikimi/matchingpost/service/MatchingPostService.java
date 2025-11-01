@@ -11,6 +11,7 @@ import Myaong.Gangajikimi.matchingpost.repository.MatchingPostRepository;
 import Myaong.Gangajikimi.matchingpost.web.dto.request.MatchingPostRequest;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResponse;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResultResponse;
+import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
 import Myaong.Gangajikimi.postfound.service.PostFoundQueryService;
 import Myaong.Gangajikimi.postfoundembedding.entity.PostFoundEmbedding;
@@ -40,6 +41,7 @@ public class MatchingPostService {
     private final PostFoundEmbeddingService postFoundEmbeddingService;
     private final PostLostEmbeddingService postLostEmbeddingService;
     private final S3Service s3Service;
+    private final NotificationService notificationService;
 
     private final MatchingPostRepository matchingPostRepository;
 
@@ -80,6 +82,10 @@ public class MatchingPostService {
                 .map(matchingPostRepository::save)
                 .toList();
 
+        for (MatchingPost m : result) {
+            notificationService.notifyNewMatchForLostOwner(m.getPostLost(), m.getPostFound());
+        }
+
         return MatchingResponse.of(postLost, result.size());
     }
 
@@ -107,6 +113,10 @@ public class MatchingPostService {
                 })
                 .map(matchingPostRepository::save)
                 .toList();
+
+        for (MatchingPost m : result) {
+            notificationService.notifyNewMatchForFoundOwner(m.getPostFound(), m.getPostLost());
+        }
 
         return MatchingResponse.of(postFound, result.size());
     }
