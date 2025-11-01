@@ -44,4 +44,7 @@ public class Notification extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "post_type", length = 20)
 	private PostType postType;
+
+	@Column(name = "matched_post_title")
+	private String matchedPostTitle;
 }

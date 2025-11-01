@@ -18,6 +18,8 @@ import Myaong.Gangajikimi.notification.converter.NotificationConverter;
 import Myaong.Gangajikimi.notification.entity.Notification;
 import Myaong.Gangajikimi.notification.repository.NotificationRepository;
 import Myaong.Gangajikimi.notification.web.dto.NotificationDto;
+import Myaong.Gangajikimi.postfound.entity.PostFound;
+import Myaong.Gangajikimi.postlost.entity.PostLost;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -68,16 +70,72 @@ public class NotificationService {
 			.message("내 실종게시글에 새로운 발견카드가 도착했어요. 목격자와 1:1 채팅으로 확인해봐요.")
 			.isRead(false)
 			.chatRoomId(chatRoomId)
-			.postId(postId)          // 있으면 저장(선택)
-			.postType(PostType.LOST) // 있으면 저장(선택: NEW_SIGHTING엔 필요 없지만 통일성 위해)
+			.postId(postId)
+			.postType(PostType.LOST)
 			.build();
 
 		try {
 			notificationRepository.save(notification);
 		} catch (DataIntegrityViolationException ignore) {
-			// (선택) 유니크 인덱스에 걸리면 무시하도록
 		}
 	}
+
+
+	/**
+	 * LOST 작성자에게: 동적 메시지 + 상대(FOUND) 정보
+	 */
+	@Transactional
+	public void notifyNewMatchForLostOwner(PostLost lost, PostFound matchedFound) {
+		if (lost == null || matchedFound == null) return;
+
+		Long receiverId = lost.getMember().getId();
+		Notification noti = Notification.builder()
+			.receiverId(receiverId)
+			.type(NotificationType.NEW_MATCH)
+			.message(buildLostOwnerMatchMessage(lost)) // "{dogName}와(과) 닮은 아이 소식이 있어요! 확인해볼까요?"
+			.isRead(false)
+			.postId(matchedFound.getId())
+			.postType(PostType.FOUND) // 상대 타입
+			.matchedPostTitle(matchedFound.getTitle())
+			.build();
+
+		try { notificationRepository.save(noti); }
+		catch (DataIntegrityViolationException ignore) {}
+	}
+
+	private String buildLostOwnerMatchMessage(PostLost lost) {
+		String name = lost.getDogName();
+		if (name == null || name.isBlank()) {
+			return "내 게시글에 매칭된 글이 있어요! 확인해볼까요?";
+		}
+		return "실종된 "+ name + "를 닮은 아이 소식이 있어요! 확인해볼까요?";
+	}
+
+
+
+
+	/**
+	 * FOUND 작성자에게: 고정 메시지 + 상대(LOST) 정보
+	 */
+	@Transactional
+	public void notifyNewMatchForFoundOwner(PostFound found, PostLost matchedLost) {
+		if (found == null || matchedLost == null) return;
+
+		Long receiverId = found.getMember().getId();
+		Notification notification = Notification.builder()
+			.receiverId(receiverId)
+			.type(NotificationType.NEW_MATCH)
+			.message("내가 발견한 강아지와 닮은 아이의 실종 신고가 등록되었어요.") // 고정문구
+			.isRead(false)
+			.postId(matchedLost.getId())
+			.postType(PostType.LOST) // 상대 타입
+			.matchedPostTitle(matchedLost.getTitle())
+			.build();
+
+		try { notificationRepository.save(notification); }
+		catch (DataIntegrityViolationException ignore) {}
+	}
+
 
 
 	// 내 알림목록 조회

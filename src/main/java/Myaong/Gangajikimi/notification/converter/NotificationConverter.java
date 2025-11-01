@@ -9,24 +9,25 @@ import Myaong.Gangajikimi.notification.web.dto.NotificationDto;
 
 public class NotificationConverter {
 
-	public static NotificationDto.Response toResponse(Notification e) {
+	public static NotificationDto.Response toResponse(Notification notification) {
 		// params는 비어 있어도 null이면 안 됨
 		Map<String, Object> params = new LinkedHashMap<>();
 		String screen;
 
-		if (e.getType() == NotificationType.NEARBY_POST) {
+		if (notification.getType() == NotificationType.NEARBY_POST) {
 			screen = "PostDetail";
-			if (e.getPostId() != null) params.put("postId", e.getPostId());
-			if (e.getPostType() != null) params.put("postType", e.getPostType().name());
+			if (notification.getPostId() != null) params.put("postId", notification.getPostId());
+			if (notification.getPostType() != null) params.put("postType", notification.getPostType().name());
 
-		} else if (e.getType() == NotificationType.NEW_SIGHTING) {
+		} else if (notification.getType() == NotificationType.NEW_SIGHTING) {
 			screen = "ChatDetail";
-			if (e.getChatRoomId() != null) params.put("chatroomId", e.getChatRoomId());
+			if (notification.getChatRoomId() != null) params.put("chatroomId", notification.getChatRoomId());
 
 		} else { // NEW_MATCH
 			screen = "PostDetail";
-			if (e.getPostId() != null) params.put("postId", e.getPostId());
-			if (e.getPostType() != null) params.put("postType", e.getPostType().name());
+			if (notification.getPostId() != null) params.put("postId", notification.getPostId());
+			if (notification.getPostType() != null) params.put("postType", notification.getPostType().name());
+			if (notification.getMatchedPostTitle() != null) params.put("matchedPostTitle", notification.getMatchedPostTitle());
 		}
 
 		// navTarget도 안전하게 수동 조립 (Map.of 사용 안 함)
@@ -35,11 +36,11 @@ public class NotificationConverter {
 		navTarget.put("params", params);
 
 		return NotificationDto.Response.builder()
-			.notificationId(e.getId())
-			.type(e.getType())
-			.message(e.getMessage())
-			.isRead(e.getIsRead())
-			.createdAt(e.getCreatedAt())
+			.notificationId(notification.getId())
+			.type(notification.getType())
+			.message(notification.getMessage())
+			.isRead(notification.getIsRead())
+			.createdAt(notification.getCreatedAt())
 			.navigationTarget(navTarget)
 			.build();
 	}
