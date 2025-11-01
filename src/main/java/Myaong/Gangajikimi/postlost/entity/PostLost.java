@@ -6,8 +6,10 @@ import Myaong.Gangajikimi.common.enums.DogStatus;
 
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 import Myaong.Gangajikimi.matchingpost.domain.Post;
+import Myaong.Gangajikimi.matchingpost.entity.MatchingPost;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlostembedding.entity.PostLostEmbedding;
 import Myaong.Gangajikimi.postlostreport.entity.PostLostReport;
 import Myaong.Gangajikimi.sightcard.entity.SightCard;
 import jakarta.persistence.*;
@@ -80,6 +82,12 @@ public class PostLost extends BaseEntity implements Post {
     private boolean deletedByAdmin = false;
 
     private LocalDateTime deletedAt;
+
+    @OneToOne(mappedBy = "postLost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PostLostEmbedding postLostEmbedding; // 엔티티 클래스 내부에 추가추가
+
+    @OneToMany(mappedBy = "postLost", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MatchingPost> matchingPost; // 엔티티 클래스 내부에 추가추가
 
     public boolean isDeletedByAdmin() {
         return deletedByAdmin;

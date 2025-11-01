@@ -54,7 +54,11 @@ public class QPostFound extends EntityPathBase<PostFound> {
     //inherited
     public final NumberPath<Long> id = _super.id;
 
+    public final ListPath<Myaong.Gangajikimi.matchingpost.entity.MatchingPost, Myaong.Gangajikimi.matchingpost.entity.QMatchingPost> matchingPost = this.<Myaong.Gangajikimi.matchingpost.entity.MatchingPost, Myaong.Gangajikimi.matchingpost.entity.QMatchingPost>createList("matchingPost", Myaong.Gangajikimi.matchingpost.entity.MatchingPost.class, Myaong.Gangajikimi.matchingpost.entity.QMatchingPost.class, PathInits.DIRECT2);
+
     public final Myaong.Gangajikimi.member.entity.QMember member;
+
+    public final Myaong.Gangajikimi.postfoundembedding.entity.QPostFoundEmbedding postFoundEmbedding;
 
     public final ListPath<Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport, Myaong.Gangajikimi.postfoundreport.entity.QPostFoundReport> postFoundReports = this.<Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport, Myaong.Gangajikimi.postfoundreport.entity.QPostFoundReport>createList("postFoundReports", Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport.class, Myaong.Gangajikimi.postfoundreport.entity.QPostFoundReport.class, PathInits.DIRECT2);
 
@@ -89,6 +93,7 @@ public class QPostFound extends EntityPathBase<PostFound> {
         super(type, metadata, inits);
         this.dogType = inits.isInitialized("dogType") ? new Myaong.Gangajikimi.dogtype.entity.QDogType(forProperty("dogType")) : null;
         this.member = inits.isInitialized("member") ? new Myaong.Gangajikimi.member.entity.QMember(forProperty("member")) : null;
+        this.postFoundEmbedding = inits.isInitialized("postFoundEmbedding") ? new Myaong.Gangajikimi.postfoundembedding.entity.QPostFoundEmbedding(forProperty("postFoundEmbedding"), inits.get("postFoundEmbedding")) : null;
     }
 
 }
