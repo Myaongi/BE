@@ -4,6 +4,7 @@ import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
 import Myaong.Gangajikimi.common.response.GlobalResponse;
 import Myaong.Gangajikimi.common.response.SuccessCode;
 import Myaong.Gangajikimi.matchingpost.service.MatchingPostService;
+import Myaong.Gangajikimi.matchingpost.web.docs.MatchingPostControllerDocs;
 import Myaong.Gangajikimi.matchingpost.web.dto.request.MatchingPostRequest;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/matchings")
-public class MatchingPostController {
+public class MatchingPostController implements MatchingPostControllerDocs {
 
     private final MatchingPostService matchingPostService;
 
