@@ -56,7 +56,11 @@ public class QPostLost extends EntityPathBase<PostLost> {
 
     public final DateTimePath<java.time.LocalDateTime> lostTime = createDateTime("lostTime", java.time.LocalDateTime.class);
 
+    public final ListPath<Myaong.Gangajikimi.matchingpost.entity.MatchingPost, Myaong.Gangajikimi.matchingpost.entity.QMatchingPost> matchingPost = this.<Myaong.Gangajikimi.matchingpost.entity.MatchingPost, Myaong.Gangajikimi.matchingpost.entity.QMatchingPost>createList("matchingPost", Myaong.Gangajikimi.matchingpost.entity.MatchingPost.class, Myaong.Gangajikimi.matchingpost.entity.QMatchingPost.class, PathInits.DIRECT2);
+
     public final Myaong.Gangajikimi.member.entity.QMember member;
+
+    public final Myaong.Gangajikimi.postlostembedding.entity.QPostLostEmbedding postLostEmbedding;
 
     public final ListPath<Myaong.Gangajikimi.postlostreport.entity.PostLostReport, Myaong.Gangajikimi.postlostreport.entity.QPostLostReport> postLostReports = this.<Myaong.Gangajikimi.postlostreport.entity.PostLostReport, Myaong.Gangajikimi.postlostreport.entity.QPostLostReport>createList("postLostReports", Myaong.Gangajikimi.postlostreport.entity.PostLostReport.class, Myaong.Gangajikimi.postlostreport.entity.QPostLostReport.class, PathInits.DIRECT2);
 
@@ -91,6 +95,7 @@ public class QPostLost extends EntityPathBase<PostLost> {
         super(type, metadata, inits);
         this.dogType = inits.isInitialized("dogType") ? new Myaong.Gangajikimi.dogtype.entity.QDogType(forProperty("dogType")) : null;
         this.member = inits.isInitialized("member") ? new Myaong.Gangajikimi.member.entity.QMember(forProperty("member")) : null;
+        this.postLostEmbedding = inits.isInitialized("postLostEmbedding") ? new Myaong.Gangajikimi.postlostembedding.entity.QPostLostEmbedding(forProperty("postLostEmbedding"), inits.get("postLostEmbedding")) : null;
     }
 
 }

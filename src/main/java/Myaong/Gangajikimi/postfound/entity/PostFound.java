@@ -4,8 +4,10 @@ import Myaong.Gangajikimi.common.enums.DogGender;
 import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.dogtype.entity.DogType;
 import Myaong.Gangajikimi.matchingpost.domain.Post;
+import Myaong.Gangajikimi.matchingpost.entity.MatchingPost;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundUpdateRequest;
+import Myaong.Gangajikimi.postfoundembedding.entity.PostFoundEmbedding;
 import Myaong.Gangajikimi.postfoundreport.entity.PostFoundReport;
 import Myaong.Gangajikimi.templocation.entity.TempLocation;
 
@@ -76,6 +78,13 @@ public class PostFound extends BaseEntity implements Post {
     private boolean deletedByAdmin = false;
 
     private LocalDateTime deletedAt;
+
+    @OneToOne(mappedBy = "postFound", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PostFoundEmbedding postFoundEmbedding; // 엔티티 클래스 내부에 추가
+
+    @OneToMany(mappedBy = "postFound", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MatchingPost> matchingPost; // 엔티티 클래스 내부에 추가추가
+
 
     public boolean isDeletedByAdmin() {
         return deletedByAdmin;
