@@ -349,7 +349,7 @@ public class PostLostCommandService {
 
         Point newPoint = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
 
-        fixedLocationService.save(FixedLocation.of(postLost, new Point));
+        fixedLocationService.save(FixedLocation.of(postLost, newPoint));
     }
 
 }
