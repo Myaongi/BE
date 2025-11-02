@@ -477,4 +477,72 @@ public interface PostLostControllerDocs {
         @RequestBody DogStatusUpdateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     );
+
+    @Operation(
+        summary = "강아지 위치 추적 정보 추가",
+        description = """
+            잃어버렸어요 게시글에 새로운 위치 정보를 추가합니다.
+            
+            **요청 예시:**
+            
+            Path Variable : {postLostId}
+            
+            ```json
+            {
+              "latitude": 37.4979,
+              "longitude": 127.0276
+            }
+            ```
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "위치 정보 추가 성공",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = GlobalResponse.class),
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = """
+                        {
+                            "isSuccess": true,
+                            "code": "COMMON200",
+                            "message": "SUCCESS!",
+                            "result": null
+                        }
+                        """,
+                    description = "result: null - 위치 정보 추가 성공 시 별도 데이터 없음"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "게시글을 찾을 수 없음",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = """
+                        {
+                            "isSuccess": false,
+                            "code": "POST_NOT_FOUND",
+                            "message": "게시글을 찾을 수 없습니다",
+                            "result": null
+                        }
+                        """
+                )
+            )
+        )
+    })
+    ResponseEntity<GlobalResponse> updatePostLostSpots(
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "게시글 ID",
+            example = "1",
+            required = true
+        )
+        @PathVariable Long postLostId,
+        @io.swagger.v3.oas.annotations.Parameter(
+            description = "위치 정보 (위도, 경도)"
+        )
+        @RequestBody Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateSpotsRequest request
+    );
 }

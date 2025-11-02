@@ -12,6 +12,7 @@ import Myaong.Gangajikimi.common.response.SuccessCode;
 import Myaong.Gangajikimi.facade.PostLostFacade;
 import Myaong.Gangajikimi.postlost.web.docs.PostLostControllerDocs;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateSpotsRequest;
 import Myaong.Gangajikimi.postlostreport.service.PostLostReportService;
 import Myaong.Gangajikimi.postlostreport.dto.PostLostReportRequest;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostRequest;
@@ -143,6 +144,15 @@ public class PostLostController implements PostLostControllerDocs {
         var response = postLostFacade.updatePostLostStatus(postLostId, request, memberId);
 
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
+    }
+
+    @PostMapping("/{postLostId}/spots")
+    public ResponseEntity<GlobalResponse> updatePostLostSpots(@PathVariable Long postLostId,
+                                                              @RequestBody PostLostUpdateSpotsRequest request) {
+
+        postLostFacade.updatePostLostLocation(postLostId, request);
+
+        return GlobalResponse.onSuccess(SuccessCode.OK);
     }
 
 }
