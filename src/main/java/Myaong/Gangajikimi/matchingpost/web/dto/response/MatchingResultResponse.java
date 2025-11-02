@@ -16,6 +16,8 @@ public class MatchingResultResponse {
     private String dogType;
     private String dogColor;
     private String location; // 행정동/구 단위
+    private Double latitude;
+    private Double longitude;
     private float similarity;
     private String image;
     private String timeAgo; // 분실 또는 발견 시간 경과 표시
@@ -28,6 +30,8 @@ public class MatchingResultResponse {
                                    String dogType,
                                    String dogColor,
                                    String location,
+                                   Double latitude,
+                                   Double longitude,
                                    float similarity,
                                    String image,
                                    String timeAgo) {
@@ -39,6 +43,8 @@ public class MatchingResultResponse {
         this.dogType = dogType;
         this.dogColor = dogColor;
         this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.similarity = similarity;
         this.image = image;
         this.timeAgo = timeAgo;
@@ -51,6 +57,8 @@ public class MatchingResultResponse {
                                             String dogType,
                                             String dogColor,
                                             String location,
+                                            Double latitude,
+                                            Double longitude,
                                             float similarity,
                                             String image,
                                             String timeAgo){
@@ -63,6 +71,8 @@ public class MatchingResultResponse {
                 .dogType(dogType)
                 .dogColor(dogColor)
                 .location(location)
+                .latitude(latitude)
+                .longitude(longitude)
                 .similarity(similarity)
                 .image(image)
                 .timeAgo(timeAgo)

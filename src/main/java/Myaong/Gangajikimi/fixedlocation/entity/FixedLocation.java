@@ -4,6 +4,7 @@ import Myaong.Gangajikimi.common.BaseEntity;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Geometry;
@@ -20,4 +21,23 @@ public class FixedLocation extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "geometry(point,4326)")
     private Point spot;
+
+    @Builder
+    private FixedLocation(PostLost postLost, Point spot) {
+
+        this.postLost = postLost;
+        this.spot = spot;
+
+    }
+
+    public static FixedLocation of(PostLost postLost, Point spot){
+
+        return FixedLocation.builder()
+                .postLost(postLost)
+                .spot(spot)
+                .build();
+
+    }
+
+
 }

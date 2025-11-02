@@ -10,15 +10,19 @@ import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
 import Myaong.Gangajikimi.fastapi.service.FastApiService;
+import Myaong.Gangajikimi.fixedlocation.entity.FixedLocation;
+import Myaong.Gangajikimi.fixedlocation.service.FixedLocationService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostRequest;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateSpotsRequest;
 import Myaong.Gangajikimi.postlostembedding.service.PostLostEmbeddingService;
 import Myaong.Gangajikimi.s3file.service.S3Service;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -43,7 +47,9 @@ public class PostLostCommandService {
     private final GeometryFactory geometryFactory;
     private final FastApiService fastApiService;
     private final PostLostEmbeddingService postLostEmbeddingService;
+    private final FixedLocationService fixedLocationService;
 
+    @Transactional
     public PostLost postPostLost(PostLostRequest request, Member member, List<MultipartFile> images, MultipartFile aiImage){
         long startTime = System.currentTimeMillis();
         log.info("[PostLost 작성 시작] Member : {}", member.getMemberName());
@@ -157,6 +163,7 @@ public class PostLostCommandService {
         return savedPostLost;
     }
 
+    @Transactional
     public PostLost updatePostLost(PostLostUpdateRequest request,
                                    Member member,
                                    PostLost postLost,
@@ -332,6 +339,17 @@ public class PostLostCommandService {
         } else {
             log.warn("[{} 임베딩 생성 실패] embeddingResponse가 null입니다.", imageType);
         }
+    }
+
+    @Transactional
+    public void updatePostLostLocation(Long postLostId, PostLostUpdateSpotsRequest request){
+
+        PostLost postLost = postLostRepository.findById(postLostId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
+
+        Point newPoint = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
+
+        fixedLocationService.save(FixedLocation.of(postLost, new Point));
     }
 
 }

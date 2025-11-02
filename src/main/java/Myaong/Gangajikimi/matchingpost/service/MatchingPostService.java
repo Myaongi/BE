@@ -11,6 +11,7 @@ import Myaong.Gangajikimi.matchingpost.repository.MatchingPostRepository;
 import Myaong.Gangajikimi.matchingpost.web.dto.request.MatchingPostRequest;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResponse;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResultResponse;
+import Myaong.Gangajikimi.matchingpost.web.dto.response.PostLostMatchingResultResponse;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
 import Myaong.Gangajikimi.postfound.service.PostFoundQueryService;
@@ -192,7 +193,7 @@ public class MatchingPostService {
         return duration.toHours();
     }
 
-    public PageResponse getMatchingPostsByLost(Long postLostId, Integer page, Integer size, Long memberId){
+    public PostLostMatchingResultResponse getMatchingPostsByLost(Long postLostId, Integer page, Integer size, Long memberId){
 
         Pageable pageable = Pageable.ofSize(size).withPage(page);
 
@@ -236,6 +237,8 @@ public class MatchingPostService {
                             dogType,
                             postFound.getDogColor(),
                             location,
+                            postFound.getFoundSpot().getY(),
+                            postFound.getFoundSpot().getX(),
                             similarity,
                             image,
                             timeAgo
@@ -245,7 +248,7 @@ public class MatchingPostService {
 
         boolean hasNext = toIndex < allMatches.size();
 
-        return PageResponse.of(content, hasNext);
+        return PostLostMatchingResultResponse.of(postLost.getDogName(), PageResponse.of(content, hasNext));
     }
 
     public PageResponse getMatchingPostsByFound(Long postFoundId, Integer page, Integer size, Long memberId){
@@ -292,6 +295,8 @@ public class MatchingPostService {
                             dogType,
                             postLost.getDogColor(),
                             location,
+                            postLost.getLostSpot().getY(),
+                            postLost.getLostSpot().getX(),
                             similarity,
                             image,
                             timeAgo

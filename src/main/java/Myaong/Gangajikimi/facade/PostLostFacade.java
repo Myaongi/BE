@@ -9,6 +9,7 @@ import Myaong.Gangajikimi.postlost.service.PostLostCommandService;
 import Myaong.Gangajikimi.postlost.service.PostLostQueryService;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostRequest;
 import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateRequest;
+import Myaong.Gangajikimi.postlost.web.dto.request.PostLostUpdateSpotsRequest;
 import Myaong.Gangajikimi.postlost.web.dto.response.PostLostPostResponse;
 import Myaong.Gangajikimi.postlost.web.dto.response.PostLostDetailResponse;
 import jakarta.transaction.Transactional;
@@ -93,6 +94,12 @@ public class PostLostFacade {
             updatedPostLost.getStatus(), 
             updatedPostLost.getUpdatedAt()
         );
+    }
+
+    public void updatePostLostLocation(Long postLostId, PostLostUpdateSpotsRequest request){
+
+        postLostCommandService.updatePostLostLocation(postLostId, request);
+
     }
 
 }

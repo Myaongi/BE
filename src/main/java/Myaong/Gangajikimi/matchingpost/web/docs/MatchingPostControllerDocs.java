@@ -66,40 +66,61 @@ public interface MatchingPostControllerDocs {
                     examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
                             value = """
                                 {
-                                    "isSuccess": true,
-                                    "code": "COMMON200",
-                                    "message": "SUCCESS!",
-                                    "result": {
-                                        "content": [
-                                          {
-                                            "matchingId": 8,
-                                            "postId": 5,
-                                            "postType": "FOUND",
-                                            "title": "강아지를 주웠습니다",
-                                            "dogType": "말티즈",
-                                            "dogColor": "흰색",
-                                            "location": "서울특별시 서초구",
-                                            "similarity": 75.336494,
-                                            "image": "https://gangajikimi-server...",
-                                            "timeAgo": "1일 전"
-                                          },
-                                          {
-                                            "matchingId": 9,
-                                            "postId": 5,
-                                            "postType": "FOUND",
-                                            "title": "강아지를 주웠습니다",
-                                            "dogType": "말티즈",
-                                            "dogColor": "흰색",
-                                            "location": "서울특별시 서초구",
-                                            "similarity": 75.336494,
-                                            "image": "https://gangajikimi-server...",
-                                            "timeAgo": "1일 전"
-                                          }
-                                       ],
-                                       "hastNext" : false
+                                  "isSuccess": true,
+                                  "code": "COMMON200",
+                                  "message": "SUCCESS!",
+                                  "result": {
+                                    "dogName": "멍멍이",
+                                    "pageResponse": {
+                                      "content": [
+                                        {
+                                          "matchingId": 8,
+                                          "postId": 5,
+                                          "postType": "FOUND",
+                                          "title": "강아지를 주웠습니다",
+                                          "dogType": "말티즈",
+                                          "dogColor": "흰색",
+                                          "location": "서울특별시 서초구",
+                                          "latitude": xx.xxxxxxx,
+                                          "longitude": xx.xxxxxx,
+                                          "similarity": 75.336494,
+                                          "image": "https://gangajikimi-server.s3.ap-northeast-2.amazonaws.com/postFound/36f67960-0_5.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251102T063028Z&X-Amz-SignedHeaders=host&X-Amz-Credential=AKIAU6CMEKYLFFSHDYQK%2F20251102%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Expires=3600&X-Amz-Signature=7bbb5f28c95c141d35c90777c14316d0449bbaf75dc6eeb0da791c563e0d3c9f",
+                                          "timeAgo": "1년 전"
+                                        },
+                                        {
+                                          "matchingId": 17,
+                                          "postId": 6,
+                                          "postType": "FOUND",
+                                          "title": "강아지를 주웠습니다",
+                                          "dogType": "골든 리트리버",
+                                          "dogColor": "갈색",
+                                          "location": "서울특별시 서초구",
+                                          "latitude": xx.xxxxxxx,
+                                          "longitude": xx.xxxxxx,
+                                          "similarity": 96.79052,
+                                          "image": "https://gangajikimi-server.s3.ap-northeast-2.amazonaws.com/postFound/72394364-8_6.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251102T063028Z&X-Amz-SignedHeaders=host&X-Amz-Credential=AKIAU6CMEKYLFFSHDYQK%2F20251102%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Expires=3600&X-Amz-Signature=9d1ff4b1d72999bbe7ce42d7d2354e8ba310038df0a9572ccbcc12aaf268abaa",
+                                          "timeAgo": "1년 전"
+                                        },
+                                        {
+                                          "matchingId": 26,
+                                          "postId": 9,
+                                          "postType": "FOUND",
+                                          "title": "강아지를 주웠습니다",
+                                          "dogType": "말티즈",
+                                          "dogColor": "흰색",
+                                          "location": "서울특별시 서초구",
+                                          "latitude": xx.xxxxxxx,
+                                          "longitude": xx.xxxxxx,
+                                          "similarity": 72.967224,
+                                          "image": "https://gangajikimi-server.s3.ap-northeast-2.amazonaws.com/postFound/7f1c0b83-b_9.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20251102T063028Z&X-Amz-SignedHeaders=host&X-Amz-Credential=AKIAU6CMEKYLFFSHDYQK%2F20251102%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Expires=3600&X-Amz-Signature=3eb410bfaeb27c6c71a0a114b44a40bc42a1ecd65e7061951818e0280c4d0e3b",
+                                          "timeAgo": "1년 전"
+                                        }
+                                      ],
+                                      "hasNext": false
                                     }
+                                  }
                                 }
-                        """,
+                                """,
                             description = "result: MatchingResultResponse 객체")
             )
     )
@@ -134,6 +155,8 @@ public interface MatchingPostControllerDocs {
                                             "dogType": "말티즈",
                                             "dogColor": "흰색",
                                             "location": "서울특별시 서초구",
+                                            "latitude": xx.xxxxxxx,
+                                            "longitude": xx.xxxxxx,
                                             "similarity": 75.336494,
                                             "image": "https://gangajikimi-server...",
                                             "timeAgo": "1일 전"
@@ -146,6 +169,8 @@ public interface MatchingPostControllerDocs {
                                             "dogType": "말티즈",
                                             "dogColor": "흰색",
                                             "location": "서울특별시 서초구",
+                                            "latitude": xx.xxxxxxx,
+                                            "longitude": xx.xxxxxx,
                                             "similarity": 75.336494,
                                             "image": "https://gangajikimi-server...",
                                             "timeAgo": "1일 전"
