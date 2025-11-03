@@ -132,6 +132,13 @@ public class PostFoundQueryService {
         return PageResponse.of(foundResponses, hasNext);
     }
 
+    /**
+     * MemberId로 모든 발견했어요 게시글 조회 (삭제되지 않은 게시글만)
+     */
+    public List<PostFound> findAllByMemberId(Long memberId) {
+        return postFoundRepository.findAllByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(memberId);
+    }
+
     public List<PostFound> findAllByIdIn(List<Long> ids) {
         return postFoundRepository.findAllByIdIn(ids);
     }

@@ -9,6 +9,10 @@ import Myaong.Gangajikimi.fastapi.service.FastApiService;
 import Myaong.Gangajikimi.matchingpost.entity.MatchingPost;
 import Myaong.Gangajikimi.matchingpost.repository.MatchingPostRepository;
 import Myaong.Gangajikimi.matchingpost.web.dto.request.MatchingPostRequest;
+import Myaong.Gangajikimi.chatmessage.repository.ChatMessageRepository;
+import Myaong.Gangajikimi.chatroom.entity.ChatRoom;
+import Myaong.Gangajikimi.chatroom.repository.ChatRoomRepository;
+import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingCountResponse;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResponse;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.MatchingResultResponse;
 import Myaong.Gangajikimi.matchingpost.web.dto.response.PostLostMatchingResultResponse;
@@ -43,6 +47,8 @@ public class MatchingPostService {
     private final PostLostEmbeddingService postLostEmbeddingService;
     private final S3Service s3Service;
     private final NotificationService notificationService;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     private final MatchingPostRepository matchingPostRepository;
 
@@ -317,6 +323,247 @@ public class MatchingPostService {
 
         matchingPostRepository.delete(matchingPost);
 
+    }
+
+    /**
+     * PostLost에 대한 모든 MatchingPost 삭제
+     * 
+     * @param postLost 삭제할 MatchingPost의 PostLost
+     */
+    @Transactional
+    public void deleteAllByPostLost(PostLost postLost) {
+        List<MatchingPost> matchingPosts = matchingPostRepository.findAllByPostLost(postLost);
+        matchingPostRepository.deleteAll(matchingPosts);
+    }
+
+    /**
+     * PostFound에 대한 모든 MatchingPost 삭제
+     * 
+     * @param postFound 삭제할 MatchingPost의 PostFound
+     */
+    @Transactional
+    public void deleteAllByPostFound(PostFound postFound) {
+        List<MatchingPost> matchingPosts = matchingPostRepository.findAllByPostFound(postFound);
+        matchingPostRepository.deleteAll(matchingPosts);
+    }
+
+    /**
+     * MemberId로 해당 Member의 게시글로 매칭된 게시글의 총 개수를 구하는 메서드
+     * 
+     * @param memberId 회원 ID
+     * @return 매칭된 게시글의 총 개수
+     */
+    @Transactional(readOnly = true)
+    public MatchingCountResponse getTotalMatchingCountByMemberId(Long memberId) {
+        
+        // 1. Member의 모든 PostLost 조회 (Service 계층을 통해)
+        List<PostLost> postLosts = postLostQueryService.findAllByMemberId(memberId);
+        
+        // 2. Member의 모든 PostFound 조회 (Service 계층을 통해)
+        List<PostFound> postFounds = postFoundQueryService.findAllByMemberId(memberId);
+        
+        // 3. 각 PostLost에 대한 MatchingPost 개수 합산
+        long lostMatchingCount = postLosts.stream()
+                .mapToLong(postLost -> matchingPostRepository.findAllByPostLost(postLost).size())
+                .sum();
+        
+        // 4. 각 PostFound에 대한 MatchingPost 개수 합산
+        long foundMatchingCount = postFounds.stream()
+                .mapToLong(postFound -> matchingPostRepository.findAllByPostFound(postFound).size())
+                .sum();
+        
+        // 5. 총합 계산
+        long totalCount = lostMatchingCount + foundMatchingCount;
+        
+        return MatchingCountResponse.of(memberId, totalCount);
+    }
+
+    /**
+     * PostLost ID로 채팅 기록이 있는 MatchingPost만 조회 (무한 스크롤)
+     * 
+     * @param postLostId PostLost 게시글 ID
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @param memberId 회원 ID (권한 확인용)
+     * @return 채팅 기록이 있는 MatchingPost 목록 (PageResponse)
+     */
+    @Transactional(readOnly = true)
+    public PageResponse getMatchingPostsWithChatByPostLost(Long postLostId, Integer page, Integer size, Long memberId) {
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+        
+        // 1. PostLost 조회
+        PostLost postLost = postLostQueryService.findPostLostById(postLostId);
+        
+        // 2. 권한 확인
+        if (!postLost.getMember().getId().equals(memberId)) {
+            throw new GeneralException(ErrorCode.INVALID_ACCESS);
+        }
+        
+        // 3. 해당 PostLost와 연결된 모든 MatchingPost 조회
+        List<MatchingPost> allMatchingPosts = matchingPostRepository.findAllByPostLost(postLost);
+        
+        // 4. 채팅 기록이 있는 MatchingPost만 필터링
+        List<MatchingPost> matchingPostsWithChat = allMatchingPosts.stream()
+                .filter(matchingPost -> {
+                    PostFound postFound = matchingPost.getPostFound();
+                    Long postFoundId = postFound.getId();
+                    
+                    // PostFound 게시글과 PostLost 게시글의 작성자 찾기
+                    Long postFoundMemberId = postFound.getMember().getId();
+                    Long postLostMemberId = postLost.getMember().getId();
+                    
+                    // ChatRoom이 존재하는지 확인 (postType=FOUND, postId=postFoundId, 두 회원 간)
+                    List<ChatRoom> chatRooms = chatRoomRepository.findAll().stream()
+                            .filter(room -> room.getPostType() == PostType.FOUND
+                                    && room.getPostId().equals(postFoundId)
+                                    && ((room.getMember1().getId().equals(postFoundMemberId) 
+                                            && room.getMember2().getId().equals(postLostMemberId))
+                                        || (room.getMember1().getId().equals(postLostMemberId) 
+                                            && room.getMember2().getId().equals(postFoundMemberId))))
+                            .toList();
+                    
+                    // ChatRoom이 있고, 그 ChatRoom에 ChatMessage가 있는지 확인
+                    return chatRooms.stream()
+                            .anyMatch(room -> !chatMessageRepository.findByChatRoomId(room.getId(), 
+                                    org.springframework.data.domain.Pageable.unpaged()).isEmpty());
+                })
+                .toList();
+        
+        // 5. 페이지네이션 처리
+        int fromIndex = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
+        int toIndex = Math.min(matchingPostsWithChat.size(), fromIndex + pageable.getPageSize());
+        if (fromIndex > toIndex) {
+            fromIndex = toIndex;
+        }
+        
+        List<MatchingPost> pageSlice = matchingPostsWithChat.subList(fromIndex, toIndex);
+        
+        // 6. Response로 변환
+        List<MatchingResultResponse> content = pageSlice.stream()
+                .map(matching -> {
+                    PostFound postFound = matching.getPostFound();
+                    String dogType = postFound.getDogType() != null ? postFound.getDogType().getType() : null;
+                    String location = postFound.getFoundRegion();
+                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() * 100f : 0f;
+                    String image = postFound.getAiImage() != null ? s3Service.generatePresignedUrl(postFound.getAiImage())
+                            : (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()
+                                ? s3Service.generatePresignedUrl(postFound.getRealImage().get(0))
+                                : null);
+                    String timeAgo = TimeUtil.getTimeAgo(postFound.getFoundTime());
+                    return MatchingResultResponse.of(
+                            matching.getId(),
+                            postFound.getId(),
+                            PostType.FOUND,
+                            postFound.getTitle(),
+                            dogType,
+                            postFound.getDogColor(),
+                            location,
+                            postFound.getFoundSpot().getY(),
+                            postFound.getFoundSpot().getX(),
+                            similarity,
+                            image,
+                            timeAgo
+                    );
+                })
+                .toList();
+        
+        boolean hasNext = toIndex < matchingPostsWithChat.size();
+        
+        return PageResponse.of(content, hasNext);
+    }
+
+    /**
+     * PostFound ID로 채팅 기록이 있는 MatchingPost만 조회 (무한 스크롤)
+     * 
+     * @param postFoundId PostFound 게시글 ID
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @param memberId 회원 ID (권한 확인용)
+     * @return 채팅 기록이 있는 MatchingPost 목록 (PageResponse)
+     */
+    @Transactional(readOnly = true)
+    public PageResponse getMatchingPostsWithChatByPostFound(Long postFoundId, Integer page, Integer size, Long memberId) {
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+        
+        // 1. PostFound 조회
+        PostFound postFound = postFoundQueryService.findPostFoundById(postFoundId);
+        
+        // 2. 권한 확인
+        if (!postFound.getMember().getId().equals(memberId)) {
+            throw new GeneralException(ErrorCode.INVALID_ACCESS);
+        }
+        
+        // 3. 해당 PostFound와 연결된 모든 MatchingPost 조회
+        List<MatchingPost> allMatchingPosts = matchingPostRepository.findAllByPostFound(postFound);
+        
+        // 4. 채팅 기록이 있는 MatchingPost만 필터링
+        List<MatchingPost> matchingPostsWithChat = allMatchingPosts.stream()
+                .filter(matchingPost -> {
+                    PostLost postLost = matchingPost.getPostLost();
+                    Long postLostId = postLost.getId();
+                    
+                    // PostLost 게시글과 PostFound 게시글의 작성자 찾기
+                    Long postLostMemberId = postLost.getMember().getId();
+                    Long postFoundMemberId = postFound.getMember().getId();
+                    
+                    // ChatRoom이 존재하는지 확인 (postType=LOST, postId=postLostId, 두 회원 간)
+                    List<ChatRoom> chatRooms = chatRoomRepository.findAll().stream()
+                            .filter(room -> room.getPostType() == PostType.LOST
+                                    && room.getPostId().equals(postLostId)
+                                    && ((room.getMember1().getId().equals(postLostMemberId) 
+                                            && room.getMember2().getId().equals(postFoundMemberId))
+                                        || (room.getMember1().getId().equals(postFoundMemberId) 
+                                            && room.getMember2().getId().equals(postLostMemberId))))
+                            .toList();
+                    
+                    // ChatRoom이 있고, 그 ChatRoom에 ChatMessage가 있는지 확인
+                    return chatRooms.stream()
+                            .anyMatch(room -> !chatMessageRepository.findByChatRoomId(room.getId(), 
+                                    org.springframework.data.domain.Pageable.unpaged()).isEmpty());
+                })
+                .toList();
+        
+        // 5. 페이지네이션 처리
+        int fromIndex = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
+        int toIndex = Math.min(matchingPostsWithChat.size(), fromIndex + pageable.getPageSize());
+        if (fromIndex > toIndex) {
+            fromIndex = toIndex;
+        }
+        
+        List<MatchingPost> pageSlice = matchingPostsWithChat.subList(fromIndex, toIndex);
+        
+        // 6. Response로 변환
+        List<MatchingResultResponse> content = pageSlice.stream()
+                .map(matching -> {
+                    PostLost postLost = matching.getPostLost();
+                    String dogType = postLost.getDogType() != null ? postLost.getDogType().getType() : null;
+                    String location = postLost.getLostRegion();
+                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() * 100f : 0f;
+                    String image = postLost.getAiImage() != null ? s3Service.generatePresignedUrl(postLost.getAiImage())
+                            : (postLost.getRealImage() != null && !postLost.getRealImage().isEmpty()
+                                ? s3Service.generatePresignedUrl(postLost.getRealImage().get(0))
+                                : null);
+                    String timeAgo = TimeUtil.getTimeAgo(postLost.getLostTime());
+                    return MatchingResultResponse.of(
+                            matching.getId(),
+                            postLost.getId(),
+                            PostType.LOST,
+                            postLost.getTitle(),
+                            dogType,
+                            postLost.getDogColor(),
+                            location,
+                            postLost.getLostSpot().getY(),
+                            postLost.getLostSpot().getX(),
+                            similarity,
+                            image,
+                            timeAgo
+                    );
+                })
+                .toList();
+        
+        boolean hasNext = toIndex < matchingPostsWithChat.size();
+        
+        return PageResponse.of(content, hasNext);
     }
 
 }
