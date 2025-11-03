@@ -24,9 +24,8 @@ public class DogTypeController implements DogTypeControllerDocs {
         return dogTypeService.getAllDogTypes();
     }
 
-    @PostMapping("/api/dogbreed")
-    public String getDogBreeds(@RequestPart MultipartFile image) {
-
+    @PostMapping(value = "/api/dogbreed", consumes = "multipart/form-data")
+    public String getDogBreeds(@RequestPart(value = "image") MultipartFile image) {
         return dogTypeService.getDogBreed(image);
 
     }
