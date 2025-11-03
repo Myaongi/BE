@@ -1,8 +1,8 @@
 package Myaong.Gangajikimi.postfound.web.controller;
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
-import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundDogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.response.PageResponse;
 import Myaong.Gangajikimi.common.enums.SortType;
 import Myaong.Gangajikimi.common.enums.TimeFilter;
@@ -132,14 +132,13 @@ public class PostFoundController implements PostFoundControllerDocs {
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }
 
-    @PatchMapping("/{postFoundId}/status")
+    @PatchMapping("/status")
     public ResponseEntity<GlobalResponse> updatePostFoundStatus(
-            @PathVariable Long postFoundId,
-            @RequestBody DogStatusUpdateRequest request,
+            @RequestBody PostFoundDogStatusUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long memberId = userDetails.getId();
-        var response = postFoundFacade.updatePostFoundStatus(postFoundId, request, memberId);
+        var response = postFoundFacade.updatePostFoundStatuses(request, memberId);
 
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }

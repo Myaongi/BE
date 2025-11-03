@@ -1,7 +1,7 @@
 package Myaong.Gangajikimi.postlost.web.docs;
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
-import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
+import Myaong.Gangajikimi.postlost.web.dto.request.PostLostDogStatusUpdateRequest;
 import Myaong.Gangajikimi.postlostreport.dto.PostLostReportRequest;
 import Myaong.Gangajikimi.common.response.GlobalResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -396,13 +396,19 @@ public interface PostLostControllerDocs {
     );
 
     @Operation(
-        summary = "분실물 게시글 강아지 상태 업데이트",
+        summary = "분실물 게시글 강아지 상태 일괄 업데이트",
         description = """
-            분실물 게시글의 강아지 상태만 업데이트합니다.
+            여러 분실물 게시글의 강아지 상태를 한 번에 업데이트합니다.
+            
+            **동작 방식:**
+            - 요청 본문에 게시글 ID 목록과 변경할 상태를 전송하면, 해당 게시글들의 상태가 일괄 업데이트됩니다.
+            - 본인이 작성한 게시글만 상태를 변경할 수 있습니다. (관리자 제외)
+            - 하나라도 권한이 없는 게시글이 포함되어 있으면 전체 요청이 실패합니다.
             
             **요청 예시:**
             ```json
             {
+              "postLostIds": [1, 2, 3],
               "dogStatus": "RETURNED"
             }
             ```
@@ -411,12 +417,16 @@ public interface PostLostControllerDocs {
             - MISSING: 실종
             - SIGHTED: 목격  
             - RETURNED: 귀가완료
+            
+            **주의사항:**
+            - postLostIds는 빈 배열일 수 없습니다.
+            - 모든 게시글 ID는 유효해야 하며, 본인의 게시글이어야 합니다.
             """
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "강아지 상태 업데이트 성공",
+            description = "강아지 상태 일괄 업데이트 성공",
             content = @io.swagger.v3.oas.annotations.media.Content(
                 mediaType = "application/json",
                 schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = GlobalResponse.class),
@@ -426,14 +436,43 @@ public interface PostLostControllerDocs {
                             "isSuccess": true,
                             "code": "COMMON200",
                             "message": "SUCCESS!",
-                            "result": {
-                                "postId": 1,
-                                "dogStatus": "RETURNED",
-                                "updatedAt": [2024, 1, 1, 15, 30, 0, 0]
-                            }
+                            "result": [
+                                {
+                                    "postId": 1,
+                                    "dogStatus": "RETURNED",
+                                    "updatedAt": [2024, 1, 1, 15, 30, 0, 0]
+                                },
+                                {
+                                    "postId": 2,
+                                    "dogStatus": "RETURNED",
+                                    "updatedAt": [2024, 1, 1, 15, 30, 0, 0]
+                                },
+                                {
+                                    "postId": 3,
+                                    "dogStatus": "RETURNED",
+                                    "updatedAt": [2024, 1, 1, 15, 30, 0, 0]
+                                }
+                            ]
                         }
                         """,
-                    description = "result: DogStatusUpdateResponse 객체 - postId(게시글 ID), dogStatus(업데이트된 강아지 상태), updatedAt(업데이트 시간)"
+                    description = "result: DogStatusUpdateResponse 배열 - 각 게시글별 업데이트 결과 (postId, dogStatus, updatedAt)"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "잘못된 요청 (게시글 ID 목록이 비어있거나, dogStatus가 유효하지 않음)",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = """
+                        {
+                            "isSuccess": false,
+                            "code": "VALIDATION_FAILED",
+                            "message": "유효하지 않은 요청입니다",
+                            "result": null
+                        }
+                        """
                 )
             )
         ),
@@ -455,8 +494,25 @@ public interface PostLostControllerDocs {
             )
         ),
         @ApiResponse(
+            responseCode = "403",
+            description = "권한 없음 (본인의 게시글이 아님)",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    value = """
+                        {
+                            "isSuccess": false,
+                            "code": "UNAUTHORIZED_UPDATING",
+                            "message": "수정 권한이 없습니다",
+                            "result": null
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
             responseCode = "404",
-            description = "게시글을 찾을 수 없음",
+            description = "게시글을 찾을 수 없음 (요청한 게시글 ID 중 하나라도 존재하지 않음)",
             content = @io.swagger.v3.oas.annotations.media.Content(
                 mediaType = "application/json",
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
@@ -473,8 +529,7 @@ public interface PostLostControllerDocs {
         )
     })
     ResponseEntity<GlobalResponse> updatePostLostStatus(
-        @PathVariable Long postLostId,
-        @RequestBody DogStatusUpdateRequest request,
+        @RequestBody PostLostDogStatusUpdateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails
     );
 
