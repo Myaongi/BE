@@ -1,5 +1,6 @@
 package Myaong.Gangajikimi.postlost.service;
 
+import Myaong.Gangajikimi.common.dto.response.DogStatusUpdateResponse;
 import Myaong.Gangajikimi.common.enums.DogGender;
 import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.common.enums.PostType;
@@ -308,6 +309,40 @@ public class PostLostCommandService {
         postLost.updateStatus(dogStatus);
         
         return postLost;
+    }
+
+    /**
+     * 여러 PostLost 게시글의 DogStatus를 일괄 업데이트
+     */
+    @Transactional
+    public List<DogStatusUpdateResponse> updatePostLostStatuses(
+            List<Long> postLostIds, Member member, DogStatus dogStatus) {
+        
+        List<DogStatusUpdateResponse> responses = new ArrayList<>();
+        
+        for (Long postLostId : postLostIds) {
+            PostLost postLost = postLostRepository.findById(postLostId)
+                    .orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
+            
+            // 권한 확인 - 본인만 상태 변경 가능 (관리자 제외)
+            boolean isOwner = member.equals(postLost.getMember());
+            boolean isAdmin = member.getRole() == Role.ADMIN;
+            
+            if (!isOwner && !isAdmin) {
+                throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
+            }
+            
+            // 상태 업데이트
+            postLost.updateStatus(dogStatus);
+            
+            responses.add(DogStatusUpdateResponse.of(
+                postLost.getId(),
+                postLost.getStatus(),
+                postLost.getUpdatedAt()
+            ));
+        }
+        
+        return responses;
     }
 
     /**

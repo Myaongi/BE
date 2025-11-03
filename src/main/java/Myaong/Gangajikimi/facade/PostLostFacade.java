@@ -1,7 +1,7 @@
 package Myaong.Gangajikimi.facade;
 
-import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.response.DogStatusUpdateResponse;
+import Myaong.Gangajikimi.postlost.web.dto.request.PostLostDogStatusUpdateRequest;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.member.service.MemberService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
@@ -78,22 +78,13 @@ public class PostLostFacade {
     }
 
     @Transactional
-    public DogStatusUpdateResponse updatePostLostStatus(Long postLostId, DogStatusUpdateRequest request, Long memberId) {
+    public List<DogStatusUpdateResponse> updatePostLostStatuses(PostLostDogStatusUpdateRequest request, Long memberId) {
         
         // Member 조회
         Member member = memberService.findMemberById(memberId);
         
-        // 게시글 조회
-        PostLost postLost = postLostQueryService.findPostLostById(postLostId);
-        
-        // 상태 업데이트
-        PostLost updatedPostLost = postLostCommandService.updatePostLostStatus(postLost, member, request.getDogStatus());
-        
-        return DogStatusUpdateResponse.of(
-            updatedPostLost.getId(), 
-            updatedPostLost.getStatus(), 
-            updatedPostLost.getUpdatedAt()
-        );
+        // 여러 게시글 상태 일괄 업데이트
+        return postLostCommandService.updatePostLostStatuses(request.getPostLostIds(), member, request.getDogStatus());
     }
 
     public void updatePostLostLocation(Long postLostId, PostLostUpdateSpotsRequest request){

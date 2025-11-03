@@ -2,8 +2,8 @@ package Myaong.Gangajikimi.postlost.web;
 
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
-import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.postlost.web.dto.request.PostLostDogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.response.PageResponse;
 import Myaong.Gangajikimi.common.enums.SortType;
 import Myaong.Gangajikimi.common.enums.TimeFilter;
@@ -134,14 +134,13 @@ public class PostLostController implements PostLostControllerDocs {
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }
 
-    @PatchMapping("/{postLostId}/status")
+    @PatchMapping("/status")
     public ResponseEntity<GlobalResponse> updatePostLostStatus(
-            @PathVariable Long postLostId,
-            @RequestBody DogStatusUpdateRequest request,
+            @RequestBody PostLostDogStatusUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long memberId = userDetails.getId();
-        var response = postLostFacade.updatePostLostStatus(postLostId, request, memberId);
+        var response = postLostFacade.updatePostLostStatuses(request, memberId);
 
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }

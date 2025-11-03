@@ -1,7 +1,7 @@
 package Myaong.Gangajikimi.facade;
 
-import Myaong.Gangajikimi.common.dto.request.DogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.response.DogStatusUpdateResponse;
+import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundDogStatusUpdateRequest;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.member.service.MemberService;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -85,22 +84,13 @@ public class PostFoundFacade {
     }
 
     @Transactional
-    public DogStatusUpdateResponse updatePostFoundStatus(Long postFoundId, DogStatusUpdateRequest request, Long memberId) {
+    public List<DogStatusUpdateResponse> updatePostFoundStatuses(PostFoundDogStatusUpdateRequest request, Long memberId) {
         
         // Member 조회
         Member member = memberService.findMemberById(memberId);
         
-        // 게시글 조회
-        PostFound postFound = postFoundQueryService.findPostFoundById(postFoundId);
-        
-        // 상태 업데이트
-        PostFound updatedPostFound = postFoundCommandService.updatePostFoundStatus(postFound, member, request.getDogStatus());
-        
-        return DogStatusUpdateResponse.of(
-            updatedPostFound.getId(), 
-            updatedPostFound.getStatus(), 
-            updatedPostFound.getUpdatedAt()
-        );
+        // 여러 게시글 상태 일괄 업데이트
+        return postFoundCommandService.updatePostFoundStatuses(request.getPostFoundIds(), member, request.getDogStatus());
     }
 
 }
