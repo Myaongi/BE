@@ -134,6 +134,13 @@ public class PostLostQueryService {
         return PageResponse.of(lostResponses, hasNext);
     }
 
+    /**
+     * MemberId로 모든 잃어버렸어요 게시글 조회 (삭제되지 않은 게시글만)
+     */
+    public List<PostLost> findAllByMemberId(Long memberId) {
+        return postLostRepository.findAllByMemberIdAndDeletedByAdminFalseOrderByCreatedAtDesc(memberId);
+    }
+
 
     /**
      * 매칭을 위한 Lost Post 목록 조회 (모든 활성 게시글)

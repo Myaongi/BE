@@ -13,6 +13,7 @@ import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
 import Myaong.Gangajikimi.fastapi.service.FastApiService;
 import Myaong.Gangajikimi.fixedlocation.entity.FixedLocation;
 import Myaong.Gangajikimi.fixedlocation.service.FixedLocationService;
+import Myaong.Gangajikimi.matchingpost.service.MatchingPostService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
@@ -49,6 +50,7 @@ public class PostLostCommandService {
     private final FastApiService fastApiService;
     private final PostLostEmbeddingService postLostEmbeddingService;
     private final FixedLocationService fixedLocationService;
+    private final MatchingPostService matchingPostService;
 
     @Transactional
     public PostLost postPostLost(PostLostRequest request, Member member, List<MultipartFile> images, MultipartFile aiImage){
@@ -296,22 +298,6 @@ public class PostLostCommandService {
     }
 
     /**
-     * PostLost의 DogStatus만 업데이트
-     */
-    public PostLost updatePostLostStatus(PostLost postLost, Member member, DogStatus dogStatus) {
-        
-        // TODO: 권한 확인 - 본인만 상태 변경 가능
-        // if (!member.equals(postLost.getMember())) {
-        //     throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
-        // }
-
-        // 상태 업데이트
-        postLost.updateStatus(dogStatus);
-        
-        return postLost;
-    }
-
-    /**
      * 여러 PostLost 게시글의 DogStatus를 일괄 업데이트
      */
     @Transactional
@@ -334,6 +320,11 @@ public class PostLostCommandService {
             
             // 상태 업데이트
             postLost.updateStatus(dogStatus);
+            
+            // 상태가 RETURNED로 변경되면 해당 게시글의 모든 MatchingPost 삭제
+            if (dogStatus == DogStatus.RETURNED) {
+                matchingPostService.deleteAllByPostLost(postLost);
+            }
             
             responses.add(DogStatusUpdateResponse.of(
                 postLost.getId(),

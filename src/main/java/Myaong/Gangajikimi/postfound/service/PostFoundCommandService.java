@@ -11,6 +11,7 @@ import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.fastapi.service.FastApiService;
 import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
+import Myaong.Gangajikimi.matchingpost.service.MatchingPostService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
 import Myaong.Gangajikimi.postfound.entity.PostFound;
@@ -44,6 +45,7 @@ public class PostFoundCommandService {
     private final GeometryFactory geometryFactory;
     private final FastApiService fastApiService;
     private final PostFoundEmbeddingService postFoundEmbeddingService;
+    private final MatchingPostService matchingPostService;
 
     public PostFound postPostFound(PostFoundRequest request,
                                    Member member,
@@ -290,22 +292,6 @@ public class PostFoundCommandService {
     }
 
     /**
-     * PostFound의 DogStatus만 업데이트
-     */
-    public PostFound updatePostFoundStatus(PostFound postFound, Member member, DogStatus dogStatus) {
-        
-        // 권한 확인 - 본인만 상태 변경 가능
-        //if (!member.equals(postFound.getMember())) {
-        //    throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
-        //}
-
-        // 상태 업데이트
-        postFound.updateStatus(dogStatus);
-        
-        return postFound;
-    }
-
-    /**
      * 여러 PostFound 게시글의 DogStatus를 일괄 업데이트
      */
     @jakarta.transaction.Transactional
@@ -328,6 +314,11 @@ public class PostFoundCommandService {
             
             // 상태 업데이트
             postFound.updateStatus(dogStatus);
+            
+            // 상태가 RETURNED로 변경되면 해당 게시글의 모든 MatchingPost 삭제
+            if (dogStatus == DogStatus.RETURNED) {
+                matchingPostService.deleteAllByPostFound(postFound);
+            }
             
             responses.add(DogStatusUpdateResponse.of(
                 postFound.getId(),
