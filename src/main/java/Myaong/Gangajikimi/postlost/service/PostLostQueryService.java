@@ -6,6 +6,8 @@ import Myaong.Gangajikimi.postlost.web.dto.response.PostLostHomeResponse;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.common.util.TimeUtil;
+import Myaong.Gangajikimi.fixedlocation.entity.FixedLocation;
+import Myaong.Gangajikimi.fixedlocation.service.FixedLocationService;
 import Myaong.Gangajikimi.postlost.entity.PostLost;
 import Myaong.Gangajikimi.postlost.repository.PostLostRepository;
 import Myaong.Gangajikimi.postlost.web.dto.response.PostLostDetailResponse;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.locationtech.jts.geom.Point;
 
@@ -26,6 +29,7 @@ public class PostLostQueryService {
 
     private final PostLostRepository postLostRepository;
     private final S3Service s3Service;
+    private final FixedLocationService fixedLocationService;
 
     public PostLost findPostLostById(Long postId) {
 
@@ -52,6 +56,17 @@ public class PostLostQueryService {
         //     aiImageUrl = s3Service.generatePresignedUrl(postLost.getAiImage());
         // }
 
+        // FixedLocation 조회하여 경도, 위도 배열 생성
+        List<FixedLocation> fixedLocations = fixedLocationService.findAllByPostLost(postLost);
+        List<Double> longitudes = new ArrayList<>();
+        List<Double> latitudes = new ArrayList<>();
+        
+        for (FixedLocation fixedLocation : fixedLocations) {
+            Point spot = fixedLocation.getSpot();
+            longitudes.add(spot.getX()); // longitude
+            latitudes.add(spot.getY()); // latitude
+        }
+
         return PostLostDetailResponse.of(
                 postLost.getId(),
                 postLost.getTitle(),
@@ -72,7 +87,9 @@ public class PostLostQueryService {
                 postLost.getMember().getId(), // authorId
                 postLost.getMember().getMemberName(),
                 postLost.getCreatedAt(),
-                TimeUtil.getTimeAgo(postLost.getCreatedAt())
+                TimeUtil.getTimeAgo(postLost.getCreatedAt()),
+                longitudes,
+                latitudes
         );
     }
 
