@@ -2,7 +2,6 @@ package Myaong.Gangajikimi.postlost.web.dto.response;
 
 import Myaong.Gangajikimi.common.enums.DogGender;
 import Myaong.Gangajikimi.common.enums.DogStatus;
-import Myaong.Gangajikimi.dogtype.entity.DogType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -33,6 +32,8 @@ public class PostLostDetailResponse {
     private String authorName;
     private LocalDateTime createdAt;
     private String timeAgo;
+    private List<Double> longitudes; // FixedLocation의 모든 경도 좌표
+    private List<Double> latitudes; // FixedLocation의 모든 위도 좌표
 
     @Builder
     private PostLostDetailResponse(Long postId, String title, String dogName, String dogType,
@@ -43,7 +44,8 @@ public class PostLostDetailResponse {
                                   // String aiImage, 
                                   List<String> realImages,
                                   Long authorId, String authorName,
-                                  LocalDateTime createdAt, String timeAgo) {
+                                  LocalDateTime createdAt, String timeAgo,
+                                  List<Double> longitudes, List<Double> latitudes) {
         this.postId = postId;
         this.title = title;
         this.dogName = dogName;
@@ -64,6 +66,8 @@ public class PostLostDetailResponse {
         this.authorName = authorName;
         this.createdAt = createdAt;
         this.timeAgo = timeAgo;
+        this.longitudes = longitudes;
+        this.latitudes = latitudes;
     }
 
     public static PostLostDetailResponse of(Long postId, String title, String dogName, String dogType,
@@ -74,7 +78,8 @@ public class PostLostDetailResponse {
                                           // String aiImage, 
                                           List<String> realImages,
                                           Long authorId, String authorName,
-                                          LocalDateTime createdAt, String timeAgo) {
+                                          LocalDateTime createdAt, String timeAgo,
+                                          List<Double> longitudes, List<Double> latitudes) {
         return PostLostDetailResponse.builder()
                 .postId(postId)
                 .title(title)
@@ -96,6 +101,8 @@ public class PostLostDetailResponse {
                 .authorName(authorName)
                 .createdAt(createdAt)
                 .timeAgo(timeAgo)
+                .longitudes(longitudes)
+                .latitudes(latitudes)
                 .build();
     }
 }
