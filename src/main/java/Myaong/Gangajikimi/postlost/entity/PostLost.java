@@ -230,4 +230,9 @@ public class PostLost extends BaseEntity implements Post {
     public String firstRealImage(List<String> realImage){
         return realImage.get(0);
     }
+
+    public void updateDogInfo(String dogInfo){
+        this.dogInfo = dogInfo;
+    }
+
 }
