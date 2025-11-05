@@ -226,7 +226,7 @@ public class MatchingPostService {
 
                     String dogType = postFound.getDogType() != null ? postFound.getDogType().getType() : null;
                     String location = postFound.getFoundRegion();
-                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() * 100f : 0f;
+                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() : 0f;
 
                     String image = postFound.getAiImage() != null ? s3Service.generatePresignedUrl(postFound.getAiImage())
                             : (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()
@@ -284,7 +284,7 @@ public class MatchingPostService {
 
                     String dogType = postLost.getDogType() != null ? postLost.getDogType().getType() : null;
                     String location = postLost.getLostRegion();
-                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() * 100f : 0f;
+                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() : 0f;
 
                     String image = postLost.getAiImage() != null ? s3Service.generatePresignedUrl(postLost.getAiImage())
                             : (postLost.getRealImage() != null && !postLost.getRealImage().isEmpty()
