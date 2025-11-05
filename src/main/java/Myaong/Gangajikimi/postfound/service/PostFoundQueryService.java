@@ -46,11 +46,10 @@ public class PostFoundQueryService {
             realImageUrls = s3Service.generatePresignedUrls(postFound.getRealImage());
         }
 
-        // TODO: AI 이미지 생성 로직 구현 후 활성화
-        // String aiImageUrl = null;
-        // if (postFound.getAiImage() != null && !postFound.getAiImage().isEmpty()) {
-        //     aiImageUrl = s3Service.generatePresignedUrl(postFound.getAiImage());
-        // }
+        String aiImageUrl = null;
+         if (postFound.getAiImage() != null && !postFound.getAiImage().isEmpty()) {
+             aiImageUrl = s3Service.generatePresignedUrl(postFound.getAiImage());
+        }
 
         return PostFoundDetailResponse.of(
                 postFound.getId(),
@@ -65,8 +64,7 @@ public class PostFoundQueryService {
                 postFound.getFoundSpot().getX(), // longitude
                 postFound.getFoundSpot().getY(), // latitude
                 postFound.getFoundRegion(), // 행정구역 정보
-                // TODO: AI 이미지 생성 로직 구현 후 활성화
-                // aiImageUrl,
+                aiImageUrl,
                 realImageUrls,
                 postFound.getMember().getId(), // authorId
                 postFound.getMember().getMemberName(),
@@ -97,6 +95,9 @@ public class PostFoundQueryService {
                 if (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()) {
                     presignedImageUrl = s3Service.generatePresignedUrl(postFound.getRealImage().get(0));
                 }
+                else{
+                    presignedImageUrl = s3Service.generatePresignedUrl(postFound.getAiImage());
+                }
                 return PostFoundHomeResponse.of(postFound, presignedImageUrl);
             })
             .toList();
@@ -121,6 +122,9 @@ public class PostFoundQueryService {
                 String presignedImageUrl = null;
                 if (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()) {
                     presignedImageUrl = s3Service.generatePresignedUrl(postFound.getRealImage().get(0));
+                }
+                else{
+                    presignedImageUrl = s3Service.generatePresignedUrl(postFound.getAiImage());
                 }
                 return PostFoundHomeResponse.of(postFound, presignedImageUrl);
             })

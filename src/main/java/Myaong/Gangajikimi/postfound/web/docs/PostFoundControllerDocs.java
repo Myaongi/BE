@@ -297,6 +297,7 @@ public interface PostFoundControllerDocs {
                                 "longitude": 127.0276,
                                 "latitude": 37.4979,
                                 "foundRegion": "서울시 서초구",
+                                "aiImage" : "https://s3.amazonaws.com/bucket/presigned-url-example1",
                                 "realImages": [
                                     "https://s3.amazonaws.com/bucket/presigned-url-example1",
                                     "https://s3.amazonaws.com/bucket/presigned-url-example2"
