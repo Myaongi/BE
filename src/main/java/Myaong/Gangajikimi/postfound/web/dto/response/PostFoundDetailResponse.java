@@ -27,8 +27,7 @@ public class PostFoundDetailResponse {
     private Double longitude;
     private Double latitude;
     private String foundRegion; // 행정구역 정보
-    // TODO: AI 이미지 생성 로직 구현 후 활성화
-    // private String aiImage; // AI 생성 이미지 Presigned URL
+    String aiImage; // AI 생성 이미지 Presigned URL
     private List<String> realImages; // 실제 이미지 Presigned URL 목록
     private Long authorId;
     private String authorName;
@@ -48,8 +47,7 @@ public class PostFoundDetailResponse {
                                     Double longitude,
                                     Double latitude,
                                     String foundRegion,
-                                    // TODO: AI 이미지 생성 로직 구현 후 활성화
-                                    // String aiImage,
+                                    String aiImage,
                                     List<String> realImages,
                                     Long authorId,
                                     String authorName,
@@ -66,8 +64,7 @@ public class PostFoundDetailResponse {
         this.longitude = longitude;
         this.latitude = latitude;
         this.foundRegion = foundRegion;
-        // TODO: AI 이미지 생성 로직 구현 후 활성화
-        // this.aiImage = aiImage;
+        this.aiImage = aiImage;
         this.realImages = realImages;
         this.authorId = authorId;
         this.authorName = authorName;
@@ -87,8 +84,7 @@ public class PostFoundDetailResponse {
                                              Double longitude,
                                              Double latitude,
                                              String foundRegion,
-                                             // TODO: AI 이미지 생성 로직 구현 후 활성화
-                                             // String aiImage,
+                                             String aiImage,
                                              List<String> realImages,
                                              Long authorId,
                                              String authorName,
@@ -107,8 +103,7 @@ public class PostFoundDetailResponse {
                 .longitude(longitude)
                 .latitude(latitude)
                 .foundRegion(foundRegion)
-                // TODO: AI 이미지 생성 로직 구현 후 활성화
-                // .aiImage(aiImage)
+                .aiImage(aiImage)
                 .realImages(realImages)
                 .authorId(authorId)
                 .authorName(authorName)

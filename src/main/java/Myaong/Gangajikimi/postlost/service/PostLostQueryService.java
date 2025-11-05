@@ -50,11 +50,10 @@ public class PostLostQueryService {
             realImageUrls = s3Service.generatePresignedUrls(postLost.getRealImage());
         }
 
-        // TODO: AI 이미지 생성 로직 구현 후 활성화
-        // String aiImageUrl = null;
-        // if (postLost.getAiImage() != null && !postLost.getAiImage().isEmpty()) {
-        //     aiImageUrl = s3Service.generatePresignedUrl(postLost.getAiImage());
-        // }
+        String aiImageUrl = null;
+        if (postLost.getAiImage() != null && !postLost.getAiImage().isEmpty()) {
+            aiImageUrl = s3Service.generatePresignedUrl(postLost.getAiImage());
+        }
 
         // FixedLocation 조회하여 경도, 위도 배열 생성
         List<FixedLocation> fixedLocations = fixedLocationService.findAllByPostLost(postLost);
@@ -81,8 +80,7 @@ public class PostLostQueryService {
                 postLost.getLostSpot().getX(), // longitude
                 postLost.getLostSpot().getY(), // latitude
                 postLost.getLostRegion(), // 행정구역 정보
-                // TODO: AI 이미지 생성 로직 구현 후 활성화
-                // aiImageUrl,
+                aiImageUrl,
                 realImageUrls,
                 postLost.getMember().getId(), // authorId
                 postLost.getMember().getMemberName(),
@@ -106,8 +104,6 @@ public class PostLostQueryService {
                                                                             request.getUserLongitude(),
                                                                             request.getUserLatitude());
 
-        // TODO: 필터링 기능 구현 예정
-        
         List<PostLostHomeResponse> lostResponses = lostPosts.getContent().stream()
         // PostLost를 PostLostHomeResponse로 변환 (PresignedUrl 포함)
             .map(postLost -> {
@@ -115,6 +111,9 @@ public class PostLostQueryService {
                 String presignedImageUrl = null;
                 if (postLost.getRealImage() != null && !postLost.getRealImage().isEmpty()) {
                     presignedImageUrl = s3Service.generatePresignedUrl(postLost.getRealImage().get(0));
+                }
+                else{
+                    presignedImageUrl = s3Service.generatePresignedUrl(postLost.getAiImage());
                 }
                 return PostLostHomeResponse.of(postLost, presignedImageUrl);
             })
@@ -140,6 +139,9 @@ public class PostLostQueryService {
                 String presignedImageUrl = null;
                 if (postLost.getRealImage() != null && !postLost.getRealImage().isEmpty()) {
                     presignedImageUrl = s3Service.generatePresignedUrl(postLost.getRealImage().get(0));
+                }
+                else{
+                    presignedImageUrl = s3Service.generatePresignedUrl(postLost.getAiImage());
                 }
                 return PostLostHomeResponse.of(postLost, presignedImageUrl);
             })

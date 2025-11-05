@@ -86,7 +86,7 @@ public interface AiControllerDocs {
             )
         )
     })
-    ResponseEntity<byte[]> createAiImage(
+    byte[] createAiImage(
         @RequestBody(
             description = "강아지 정보 (품종, 색상, 특징)",
             required = true,

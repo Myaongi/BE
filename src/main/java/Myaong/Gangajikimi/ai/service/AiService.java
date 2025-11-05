@@ -262,12 +262,9 @@ public class AiService {
 
     /**
      * 강아지 정보를 바탕으로 AI 이미지를 생성합니다.
-     * 이미지 바이너리를 Content-Type: image/png 헤더와 함께 반환합니다.
-     * 
-     * @param request 강아지 정보 요청 (품종, 색상, 특징)
-     * @return 이미지 바이너리와 헤더를 포함한 ResponseEntity, 실패 시 500 에러 응답
+     * 실패 시 null을 반환합니다.
      */
-    public ResponseEntity<byte[]> generateDogImage(DogInfoRequest request) {
+    public byte[] generateDogImage(DogInfoRequest request) {
 
         final String apiPath = fastApiBaseUrl + "/api/v1/imagegen";
 
@@ -279,8 +276,8 @@ public class AiService {
             log.info("AI 이미지 생성 요청 - URL: {}, breed: {}, colors: {}", apiPath, breed, colors);
 
             // 1. HTTP Header 설정 (application/json)
-            HttpHeaders requestHeaders = new HttpHeaders();
-            requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
             // 2. Request Body 생성 (DogInfoRequest 재사용)
             DogInfoRequest requestBody = DogInfoRequest.builder()
@@ -289,7 +286,7 @@ public class AiService {
                     .features(features != null ? features : "")
                     .build();
 
-            HttpEntity<DogInfoRequest> requestEntity = new HttpEntity<>(requestBody, requestHeaders);
+            HttpEntity<DogInfoRequest> requestEntity = new HttpEntity<>(requestBody, headers);
 
             // 3. 이미지 바이너리로 응답 받기
             ResponseEntity<byte[]> responseEntity = restTemplate.postForEntity(
@@ -301,25 +298,17 @@ public class AiService {
             byte[] imageBytes = responseEntity.getBody();
             if (imageBytes != null && imageBytes.length > 0) {
                 log.info("이미지 생성 성공 - breed: {}, imageSize: {} bytes", breed, imageBytes.length);
-                
-                // 4. 이미지 응답을 위한 헤더 설정
-                HttpHeaders responseHeaders = new HttpHeaders();
-                responseHeaders.setContentType(MediaType.IMAGE_PNG);
-                responseHeaders.setContentLength(imageBytes.length);
-                
-                return ResponseEntity.ok()
-                        .headers(responseHeaders)
-                        .body(imageBytes);
+                return imageBytes;
             } else {
                 log.warn("FastAPI 이미지 생성 응답이 비어있습니다 - breed: {}, colors: {}", breed, colors);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                return null;
             }
         } catch (RestClientException e) {
             log.error("FastAPI 이미지 생성 요청 실패 - breed: {}, error: {}", breed, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return null;
         } catch (Exception e) {
             log.error("FastAPI 이미지 생성 중 예상치 못한 오류 발생 - breed: {}, error: {}", breed, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return null;
         }
     }
 
