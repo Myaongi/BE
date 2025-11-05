@@ -9,8 +9,8 @@ import Myaong.Gangajikimi.dogtype.service.DogTypeService;
 import Myaong.Gangajikimi.common.enums.Role;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
-import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
-import Myaong.Gangajikimi.fastapi.service.FastApiService;
+import Myaong.Gangajikimi.ai.web.dto.response.EmbeddingResponse;
+import Myaong.Gangajikimi.ai.service.AiService;
 import Myaong.Gangajikimi.fixedlocation.entity.FixedLocation;
 import Myaong.Gangajikimi.fixedlocation.service.FixedLocationService;
 import Myaong.Gangajikimi.matchingpost.service.MatchingPostService;
@@ -47,7 +47,7 @@ public class PostLostCommandService {
     private final KakaoApiService kakaoApiService;
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory;
-    private final FastApiService fastApiService;
+    private final AiService aiService;
     private final PostLostEmbeddingService postLostEmbeddingService;
     private final FixedLocationService fixedLocationService;
     private final MatchingPostService matchingPostService;
@@ -80,7 +80,6 @@ public class PostLostCommandService {
                 dogGender,
                 request.getDogColor(),
                 request.getFeatures(),
-                //TODO: AI 이미지도 null 처리해서 우선 생성해야 함
                 newPoint,
                 request.getLostDate(),
                 request.getLostTime(),
@@ -115,7 +114,7 @@ public class PostLostCommandService {
                     "AI 이미지",
                     startTime);
                     
-        } else if (hasRealImages && images != null) {
+        } else if (hasRealImages) {
             // 실제 이미지들 업로드
             imageKeyNames = images.stream()
                     .filter(image -> image != null && !image.isEmpty()) // null 또는 빈 파일 필터링
@@ -188,7 +187,7 @@ public class PostLostCommandService {
 
         // 강아지 정보가 변경되었으면 다시 생성
         if(isDogInfoChanged){
-            dogInfo = fastApiService.normalizeText(
+            dogInfo = aiService.normalizeText(
                     request.getDogType(),
                     request.getDogColor(),
                     request.getFeatures()
@@ -286,9 +285,17 @@ public class PostLostCommandService {
             throw new GeneralException(ErrorCode.POST_NOT_FOUND);
         }
 
-        // TODO : 게시글의 이미지 삭제 로직 추가
+        // 게시글의 실제 이미지들 삭제
+        if (postLost.getRealImage() != null && !postLost.getRealImage().isEmpty()) {
+            postLost.getRealImage().forEach(s3Service::deleteFile);
+            log.info("[게시글 삭제] 실제 이미지 삭제 완료");
+        }
 
-        // TODO : 게시글의 ai 이미지 삭제 로직 추가
+        // 게시글의 AI 이미지 삭제
+        if (postLost.getAiImage() != null && !postLost.getAiImage().isEmpty()) {
+            s3Service.deleteFile(postLost.getAiImage());
+            log.info("[게시글 삭제] AI 이미지 삭제 완료");
+        }
 
         postLostRepository.delete(postLost);
     }
@@ -344,7 +351,7 @@ public class PostLostCommandService {
                                         long startTime) {
         log.info("[임베딩 생성 시작] {} 사용", imageType);
         
-        EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
+        EmbeddingResponse embeddingResponse = aiService.generateEmbedding(
                 image,
                 dogType,
                 dogColor,

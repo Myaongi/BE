@@ -1,6 +1,5 @@
-package Myaong.Gangajikimi.fastapi.dto.request;
+package Myaong.Gangajikimi.ai.web.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

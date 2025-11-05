@@ -1,4 +1,4 @@
-package Myaong.Gangajikimi.fastapi.dto.response;
+package Myaong.Gangajikimi.ai.web.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

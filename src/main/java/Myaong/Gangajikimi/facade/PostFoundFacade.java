@@ -38,8 +38,6 @@ public class PostFoundFacade {
         // Member 생성
         Member member = memberService.findMemberById(memberId);
 
-        // TODO: 생성된 AI 이미지 추가
-
         // 게시글 생성
         PostFound postFound = postFoundCommandService.postPostFound(request, member, images, aiImage);
 
@@ -53,7 +51,8 @@ public class PostFoundFacade {
     public PostFoundResponse updatePostFound(PostFoundUpdateRequest request,
                                              Long memberId,
                                              Long postFoundId,
-                                             List<MultipartFile> images){
+                                             List<MultipartFile> images,
+                                             MultipartFile aiImage) {
 
         // Member 조회
         Member member = memberService.findMemberById(memberId);
@@ -65,7 +64,7 @@ public class PostFoundFacade {
         tempLocationService.updateTempLocation(request.getFoundLongitude(), request.getFoundLatitude(), postFound);
 
         //업데이트 후 결과 반환
-        return PostFoundResponse.from(postFoundCommandService.updatePostFound(request, member, postFound, images));
+        return PostFoundResponse.from(postFoundCommandService.updatePostFound(request, member, postFound, images, aiImage));
     }
 
     @Transactional

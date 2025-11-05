@@ -64,7 +64,7 @@ public class PostFoundController implements PostFoundControllerDocs {
         PostFoundUpdateRequest request = objectMapper.readValue(dataJson, PostFoundUpdateRequest.class);
 
         return GlobalResponse.onSuccess(SuccessCode.OK,
-                postFoundFacade.updatePostFound(request, memberId, postFoundId, images));
+                postFoundFacade.updatePostFound(request, memberId, postFoundId, images, aiImage));
     }
 
     @DeleteMapping("/{postFoundId}")
