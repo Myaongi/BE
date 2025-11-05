@@ -69,13 +69,7 @@ public class PostLostCommandService {
         Point newPoint = geometryFactory.createPoint(new Coordinate(request.getLostLongitude(), request.getLostLatitude()));
 
         String lostRegion = kakaoApiService.getAddrFromKakaoApi(request.getLostLongitude(), request.getLostLatitude());
-
-        // FastAPI로 정제된 텍스트 가져오기 (실패 시 빈 문자열)
-        String dogInfo = fastApiService.normalizeText(
-                processedDogType,
-                request.getDogColor(),
-                request.getFeatures()
-        );
+        log.info("[Kakao API 호출 완료] 실행 시간: {}ms", System.currentTimeMillis() - startTime);
 
         // 먼저 PostLost를 저장해서 ID를 얻음
         PostLost newPostLost = PostLost.of(null, // 이미지는 나중에 설정
@@ -91,14 +85,14 @@ public class PostLostCommandService {
                 request.getLostDate(),
                 request.getLostTime(),
                 lostRegion,
-                dogInfo);
+                null);
 
         PostLost savedPostLost = postLostRepository.save(newPostLost);
-        log.info("[게시글 저장 완료] PostLost ID: {}", savedPostLost.getId());
+        log.info("[게시글 저장 완료] PostLost ID: {}, 실행 시간: {}ms", savedPostLost.getId(), System.currentTimeMillis() - startTime);
 
         // S3에 이미지 업로드 및 keyName 목록 생성
-        List<String> imageKeyNames = new ArrayList<>();
-        String aiImageKeyName = null;
+        List<String> imageKeyNames;
+        String aiImageKeyName;
 
         // 실제 이미지 또는 AI 이미지 중 하나는 무조건 존재
         if (hasAiImage) {
@@ -118,7 +112,8 @@ public class PostLostCommandService {
                     processedDogType,
                     request.getDogColor(),
                     request.getFeatures(),
-                    "AI 이미지");
+                    "AI 이미지",
+                    startTime);
                     
         } else if (hasRealImages && images != null) {
             // 실제 이미지들 업로드
@@ -130,7 +125,7 @@ public class PostLostCommandService {
                             savedPostLost.getId().toString()) // 폴더/게시글ID/파일명 형태로 저장
                     )
                     .toList();
-            log.info("[실제 이미지 업로드 완료] 업로드된 이미지 수: {}", imageKeyNames.size());
+            log.info("[실제 이미지 업로드 완료] 업로드된 이미지 수: {}, 실행 시간: {}ms", imageKeyNames.size(), System.currentTimeMillis() - startTime);
 
             // 업로드된 이미지 keyNames로 PostLost 업데이트
             savedPostLost.updateImages(imageKeyNames);
@@ -141,7 +136,8 @@ public class PostLostCommandService {
                     processedDogType,
                     request.getDogColor(),
                     request.getFeatures(),
-                    "실제 이미지");
+                    "실제 이미지",
+                    startTime);
                     
         } else {
             // 이 경우는 발생하지 않아야 함 (프론트엔드에서 보장)
@@ -344,7 +340,8 @@ public class PostLostCommandService {
                                         String dogType, 
                                         String dogColor, 
                                         String features, 
-                                        String imageType) {
+                                        String imageType,
+                                        long startTime) {
         log.info("[임베딩 생성 시작] {} 사용", imageType);
         
         EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
@@ -353,6 +350,7 @@ public class PostLostCommandService {
                 dogColor,
                 features
         );
+        log.info("[FastAPI 임베딩 생성 요청 완료] {} 사용, 실행 시간: {}ms", imageType, System.currentTimeMillis() - startTime);
 
         // 임베딩 생성 성공 시 DB에 저장
         if (embeddingResponse != null) {
@@ -361,6 +359,7 @@ public class PostLostCommandService {
                     embeddingResponse.imageEmbeddingToArray(), // 이미지 임베딩 벡터
                     embeddingResponse.textEmbeddingToArray()   // 텍스트 임베딩 벡터
             );
+            postLost.updateDogInfo(String.join("\n", embeddingResponse.getSentences()));
             log.info("[{} 임베딩 저장 완료]", imageType);
         } else {
             log.warn("[{} 임베딩 생성 실패] embeddingResponse가 null입니다.", imageType);

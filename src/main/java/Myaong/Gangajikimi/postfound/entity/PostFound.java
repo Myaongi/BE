@@ -65,7 +65,7 @@ public class PostFound extends BaseEntity implements Post {
     @Column(nullable = false, columnDefinition = "geometry(Point,4326)")
     private Point foundSpot;
 
-    @Column(nullable = false)
+    @Column
     private String dogInfo;
 
     @Column
@@ -223,6 +223,10 @@ public class PostFound extends BaseEntity implements Post {
      * */
     public String firstRealImage(List<String> realImage){
         return realImage.get(0);
+    }
+
+    public void updateDogInfo(String dogInfo){
+        this.dogInfo = dogInfo;
     }
 }
 
