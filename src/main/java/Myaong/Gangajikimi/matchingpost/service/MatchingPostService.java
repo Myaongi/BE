@@ -5,7 +5,7 @@ import Myaong.Gangajikimi.common.enums.PostType;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
 import Myaong.Gangajikimi.common.util.TimeUtil;
-import Myaong.Gangajikimi.fastapi.service.FastApiService;
+import Myaong.Gangajikimi.ai.service.AiService;
 import Myaong.Gangajikimi.matchingpost.entity.MatchingPost;
 import Myaong.Gangajikimi.matchingpost.repository.MatchingPostRepository;
 import Myaong.Gangajikimi.matchingpost.web.dto.request.MatchingPostRequest;
@@ -42,7 +42,7 @@ public class MatchingPostService {
 
     private final PostLostQueryService postLostQueryService;
     private final PostFoundQueryService postFoundQueryService;
-    private final FastApiService fastApiService;
+    private final AiService aiService;
     private final PostFoundEmbeddingService postFoundEmbeddingService;
     private final PostLostEmbeddingService postLostEmbeddingService;
     private final S3Service s3Service;
@@ -75,7 +75,7 @@ public class MatchingPostService {
         List<MatchingPost> result = postFounds.stream()
                 .map(foundPost -> {
                     PostFoundEmbedding postFoundEmbedding = postFoundEmbeddingService.findPostFoundEmbeddingByPostFound(foundPost);
-                    double score = fastApiService
+                    double score = aiService
                             .calculateSimilarity(
                                     lostImageEmbedding,
                                     lostTextEmbedding,
@@ -107,7 +107,7 @@ public class MatchingPostService {
         List<MatchingPost> result = postLosts.stream()
                 .map(post -> {
                     PostLostEmbedding postLostEmbedding = postLostEmbeddingService.findPostLostEmbeddingByPostLost(post);
-                    double score = fastApiService
+                    double score = aiService
                             .calculateSimilarity(
                                     foundImageEmbedding,
                                     foundTextEmbedding,

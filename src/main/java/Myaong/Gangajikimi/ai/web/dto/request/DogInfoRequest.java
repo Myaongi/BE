@@ -1,4 +1,4 @@
-package Myaong.Gangajikimi.fastapi.dto.request;
+package Myaong.Gangajikimi.ai.web.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TextNormalizeRequest {
+public class DogInfoRequest {
     private String breed;
     private String colors;
     private String features;

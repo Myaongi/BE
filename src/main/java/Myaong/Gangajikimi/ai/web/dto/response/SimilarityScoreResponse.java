@@ -1,4 +1,4 @@
-package Myaong.Gangajikimi.fastapi.dto.response;
+package Myaong.Gangajikimi.ai.web.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

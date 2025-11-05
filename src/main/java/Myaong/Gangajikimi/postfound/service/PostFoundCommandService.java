@@ -9,8 +9,8 @@ import Myaong.Gangajikimi.dogtype.service.DogTypeService;
 import Myaong.Gangajikimi.common.enums.Role;
 import Myaong.Gangajikimi.common.exception.GeneralException;
 import Myaong.Gangajikimi.common.response.ErrorCode;
-import Myaong.Gangajikimi.fastapi.service.FastApiService;
-import Myaong.Gangajikimi.fastapi.dto.response.EmbeddingResponse;
+import Myaong.Gangajikimi.ai.service.AiService;
+import Myaong.Gangajikimi.ai.web.dto.response.EmbeddingResponse;
 import Myaong.Gangajikimi.matchingpost.service.MatchingPostService;
 import Myaong.Gangajikimi.member.entity.Member;
 import Myaong.Gangajikimi.notification.service.NotificationService;
@@ -43,7 +43,7 @@ public class PostFoundCommandService {
     private final KakaoApiService kakaoApiService;
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory;
-    private final FastApiService fastApiService;
+    private final AiService aiService;
     private final PostFoundEmbeddingService postFoundEmbeddingService;
     private final MatchingPostService matchingPostService;
 
@@ -93,11 +93,11 @@ public class PostFoundCommandService {
                 dogGender,
                 request.getDogColor(),
                 request.getFeatures(),
-                //TODO: AI 이미지도 null 처리해서 우선 생성해야 함
                 newPoint,
                 request.getFoundDate(),
                 request.getFoundTime(),
                 foundRegion,
+                null,
                 null
         );
 
@@ -130,7 +130,7 @@ public class PostFoundCommandService {
                     "AI 이미지",
                     startTime);
 
-        } else if (hasRealImages && images != null) {
+        } else if (hasRealImages) {
             // 실제 이미지들 업로드
             imageKeyNames = images.stream()
                     .filter(image -> image != null && !image.isEmpty()) // null 또는 빈 파일 필터링
@@ -179,7 +179,8 @@ public class PostFoundCommandService {
     public PostFound updatePostFound(PostFoundUpdateRequest request,
                                      Member member,
                                      PostFound postFound,
-                                     List<MultipartFile> images){
+                                     List<MultipartFile> images,
+                                     MultipartFile aiImage){
 
         // 권한 확인
         if(!member.equals(postFound.getMember())){
@@ -200,14 +201,30 @@ public class PostFoundCommandService {
 
         // 강아지 정보가 변경되었으면 다시 생성
         if(isDogInfoChanged){
-            dogInfo = fastApiService.normalizeText(
+            dogInfo = aiService.normalizeText(
                     request.getDogType(),
                     request.getDogColor(),
                     request.getFeatures()
             );
         }
 
-        // TODO: AI image가 변경 되었다면 재업로드
+        // AI 이미지 업데이트 처리
+        String aiImageKeyName = null;
+        if (aiImage != null && !aiImage.isEmpty()) {
+            // 기존 AI 이미지가 있다면 삭제
+            if (postFound.getAiImage() != null && !postFound.getAiImage().isEmpty()) {
+                s3Service.deleteFile(postFound.getAiImage());
+                log.info("[기존 AI 이미지 삭제] keyName: {}", postFound.getAiImage());
+            }
+
+            // 새 AI 이미지 업로드
+            aiImageKeyName = s3Service.upload(
+                    aiImage,
+                    "postLost",
+                    postFound.getId().toString() + "_ai"
+            );
+            log.info("[새 AI 이미지 업로드 완료] keyName: {}", aiImageKeyName);
+        }
 
         // 1. 삭제할 이미지 처리
         List<String> deletedImageKeys = new ArrayList<>();
@@ -280,9 +297,17 @@ public class PostFoundCommandService {
             throw new GeneralException(ErrorCode.POST_NOT_FOUND);
         }
 
-        // TODO : 게시글의 이미지 삭제 로직 추가
+        // 게시글의 실제 이미지들 삭제
+        if (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()) {
+            postFound.getRealImage().forEach(s3Service::deleteFile);
+            log.info("[게시글 삭제] 실제 이미지 삭제 완료");
+        }
 
-        // TODO : 게시글의 ai 이미지 삭제 로직 추가
+        // 게시글의 AI 이미지 삭제
+        if (postFound.getAiImage() != null && !postFound.getAiImage().isEmpty()) {
+            s3Service.deleteFile(postFound.getAiImage());
+            log.info("[게시글 삭제] AI 이미지 삭제 완료");
+        }
 
         postFoundRepository.delete(postFound);
     }
@@ -338,7 +363,7 @@ public class PostFoundCommandService {
                                         long startTime) {
         log.info("[임베딩 생성 시작] {} 사용", imageType);
         
-        EmbeddingResponse embeddingResponse = fastApiService.generateEmbedding(
+        EmbeddingResponse embeddingResponse = aiService.generateEmbedding(
                 image,
                 dogType,
                 dogColor,

@@ -114,7 +114,8 @@ public class PostFound extends BaseEntity implements Post {
                       LocalDate foundDate,
                       LocalDateTime foundTime,
                       String foundRegion,
-                      String dogInfo){
+                      String dogInfo,
+                      String aiImage){
 
         this.realImage = realImage;
         this.member = member;
@@ -129,6 +130,7 @@ public class PostFound extends BaseEntity implements Post {
         this.foundTime = foundTime;
         this.foundRegion = foundRegion;
         this.dogInfo = dogInfo;
+        this.aiImage = aiImage;
     }
 
     public static PostFound of(List<String> realImage,
@@ -142,7 +144,8 @@ public class PostFound extends BaseEntity implements Post {
                                LocalDate foundDate,
                                LocalDateTime foundTime,
                                String foundRegion,
-                               String dogInfo){
+                               String dogInfo,
+                               String aiImage){
 
         return PostFound.builder()
                 .realImage(realImage)
@@ -157,6 +160,7 @@ public class PostFound extends BaseEntity implements Post {
                 .foundTime(foundTime)
                 .foundRegion(foundRegion)
                 .dogInfo(dogInfo)
+                .aiImage(aiImage)
                 .build();
     }
 
