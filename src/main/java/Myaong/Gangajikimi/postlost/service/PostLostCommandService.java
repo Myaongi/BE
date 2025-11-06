@@ -60,6 +60,33 @@ public class PostLostCommandService {
         // 실제 이미지와 AI 이미지 중 하나는 무조건 들어옴 (프론트엔드에서 보장)
         boolean hasRealImages = (images != null && !images.isEmpty());
         boolean hasAiImage = (aiImage != null && !aiImage.isEmpty());
+        
+        log.info("[이미지 초기 체크] images null: {}, images empty: {}, images size: {}, aiImage null: {}, aiImage empty: {}", 
+                images == null, 
+                images != null && images.isEmpty(),
+                images != null ? images.size() : 0,
+                aiImage == null, 
+                aiImage != null && aiImage.isEmpty());
+        
+        if (aiImage != null) {
+            log.info("[AI 이미지 상세 정보] originalFilename: {}, size: {}, contentType: {}, isEmpty: {}", 
+                    aiImage.getOriginalFilename(), 
+                    aiImage.getSize(), 
+                    aiImage.getContentType(),
+                    aiImage.isEmpty());
+        }
+        
+        if (images != null && !images.isEmpty()) {
+            for (int i = 0; i < images.size(); i++) {
+                MultipartFile img = images.get(i);
+                log.info("[실제 이미지 {}] originalFilename: {}, size: {}, contentType: {}, isEmpty: {}", 
+                        i, 
+                        img.getOriginalFilename(), 
+                        img.getSize(), 
+                        img.getContentType(),
+                        img.isEmpty());
+            }
+        }
 
         String processedDogType = request.getDogType();
 
@@ -93,28 +120,45 @@ public class PostLostCommandService {
         List<String> imageKeyNames;
         String aiImageKeyName;
 
+        // 이미지 분기 체크 로그
+        log.info("[이미지 분기 체크 시작] PostLost ID: {}, hasRealImages: {}, hasAiImage: {}", 
+                savedPostLost.getId(), hasRealImages, hasAiImage);
+
         // 실제 이미지 또는 AI 이미지 중 하나는 무조건 존재
         if (hasAiImage) {
-            // AI 이미지 업로드
-            aiImageKeyName = s3Service.upload(
-                    aiImage,
-                    "postLost",
-                    savedPostLost.getId().toString() + "_ai" // postId_ai 형태로 저장
-            );
-            log.info("[AI 이미지 업로드 완료] AI 이미지 keyName: {}", aiImageKeyName);
-            
-            savedPostLost.setAiImage(aiImageKeyName);
-            
-            // AI 이미지 임베딩 생성 및 저장
-            generateAndSaveEmbedding(savedPostLost,
-                    aiImage,
-                    processedDogType,
-                    request.getDogColor(),
-                    request.getFeatures(),
-                    "AI 이미지",
-                    startTime);
+            log.info("[AI 이미지 분기 진입] PostLost ID: {}", savedPostLost.getId());
+            try {
+                log.info("[AI 이미지 S3 업로드 시작] PostLost ID: {}, size: {}", savedPostLost.getId(), aiImage.getSize());
+                // AI 이미지 업로드
+                aiImageKeyName = s3Service.upload(
+                        aiImage,
+                        "postLost",
+                        savedPostLost.getId().toString() + "_ai" // postId_ai 형태로 저장
+                );
+                log.info("[AI 이미지 업로드 완료] AI 이미지 keyName: {}, 실행 시간: {}ms", 
+                        aiImageKeyName, System.currentTimeMillis() - startTime);
+                
+                savedPostLost.setAiImage(aiImageKeyName);
+                
+                // AI 이미지 임베딩 생성 및 저장
+                log.info("[AI 이미지 임베딩 생성 시작] PostLost ID: {}", savedPostLost.getId());
+                generateAndSaveEmbedding(savedPostLost,
+                        aiImage,
+                        processedDogType,
+                        request.getDogColor(),
+                        request.getFeatures(),
+                        "AI 이미지",
+                        startTime);
+                log.info("[AI 이미지 임베딩 생성 완료] PostLost ID: {}, 실행 시간: {}ms", 
+                        savedPostLost.getId(), System.currentTimeMillis() - startTime);
+            } catch (Exception e) {
+                log.error("[AI 이미지 처리 실패] PostLost ID: {}, error: {}", 
+                        savedPostLost.getId(), e.getMessage(), e);
+                throw e;
+            }
                     
         } else if (hasRealImages) {
+            log.info("[실제 이미지 분기 진입] PostLost ID: {}, images count: {}", savedPostLost.getId(), images.size());
             // 실제 이미지들 업로드
             imageKeyNames = images.stream()
                     .filter(image -> image != null && !image.isEmpty()) // null 또는 빈 파일 필터링
@@ -140,6 +184,8 @@ public class PostLostCommandService {
                     
         } else {
             // 이 경우는 발생하지 않아야 함 (프론트엔드에서 보장)
+            log.error("[이미지 없음 예외 발생] PostLost ID: {}, hasRealImages: {}, hasAiImage: {}, images null: {}, aiImage null: {}", 
+                    savedPostLost.getId(), hasRealImages, hasAiImage, images == null, aiImage == null);
             throw new GeneralException(ErrorCode.NO_IMAGE);
         }
 
@@ -147,16 +193,26 @@ public class PostLostCommandService {
         /**
          * 반경 3km 유저들에게 알림 전송
          * */
-        notificationService.notifyNearbyUsers(
-            savedPostLost.getId(),
-            request.getLostLatitude(),
-            request.getLostLongitude(),
-            member.getId(),
-            PostType.LOST
-        );
+        log.info("[알림 전송 시작] PostLost ID: {}, latitude: {}, longitude: {}", 
+                savedPostLost.getId(), request.getLostLatitude(), request.getLostLongitude());
+        try {
+            notificationService.notifyNearbyUsers(
+                savedPostLost.getId(),
+                request.getLostLatitude(),
+                request.getLostLongitude(),
+                member.getId(),
+                PostType.LOST
+            );
+            log.info("[알림 전송 완료] PostLost ID: {}, 실행 시간: {}ms", 
+                    savedPostLost.getId(), System.currentTimeMillis() - startTime);
+        } catch (Exception e) {
+            log.error("[알림 전송 실패] PostLost ID: {}, error: {}", 
+                    savedPostLost.getId(), e.getMessage(), e);
+            // 알림 실패해도 게시글 작성은 성공으로 처리
+        }
 
         long endTime = System.currentTimeMillis();
-        log.info("[PostLost 작성 완료] PostLost ID: {}, 실행 시간: {}ms", savedPostLost.getId(), (endTime - startTime));
+        log.info("[PostLost 작성 완료] PostLost ID: {}, 전체 실행 시간: {}ms", savedPostLost.getId(), (endTime - startTime));
 
         return savedPostLost;
     }
@@ -349,27 +405,43 @@ public class PostLostCommandService {
                                         String features, 
                                         String imageType,
                                         long startTime) {
-        log.info("[임베딩 생성 시작] {} 사용", imageType);
+        log.info("[임베딩 생성 시작] {} 사용, PostLost ID: {}, image size: {}, contentType: {}, originalFilename: {}", 
+                imageType, postLost.getId(), image.getSize(), image.getContentType(), image.getOriginalFilename());
         
-        EmbeddingResponse embeddingResponse = aiService.generateEmbedding(
-                image,
-                dogType,
-                dogColor,
-                features
-        );
-        log.info("[FastAPI 임베딩 생성 요청 완료] {} 사용, 실행 시간: {}ms", imageType, System.currentTimeMillis() - startTime);
-
-        // 임베딩 생성 성공 시 DB에 저장
-        if (embeddingResponse != null) {
-            postLostEmbeddingService.saveEmbedding(
-                    postLost,
-                    embeddingResponse.imageEmbeddingToArray(), // 이미지 임베딩 벡터
-                    embeddingResponse.textEmbeddingToArray()   // 텍스트 임베딩 벡터
+        try {
+            log.info("[FastAPI 임베딩 생성 요청 시작] PostLost ID: {}, dogType: {}, dogColor: {}", 
+                    postLost.getId(), dogType, dogColor);
+            
+            EmbeddingResponse embeddingResponse = aiService.generateEmbedding(
+                    image,
+                    dogType,
+                    dogColor,
+                    features
             );
-            postLost.updateDogInfo(String.join("\n", embeddingResponse.getSentences()));
-            log.info("[{} 임베딩 저장 완료]", imageType);
-        } else {
-            log.warn("[{} 임베딩 생성 실패] embeddingResponse가 null입니다.", imageType);
+            log.info("[FastAPI 임베딩 생성 요청 완료] {} 사용, 실행 시간: {}ms", imageType, System.currentTimeMillis() - startTime);
+
+            // 임베딩 생성 성공 시 DB에 저장
+            if (embeddingResponse != null) {
+                log.info("[임베딩 저장 시작] PostLost ID: {}, imageEmbedding size: {}, textEmbedding size: {}", 
+                        postLost.getId(),
+                        embeddingResponse.getImage() != null ? embeddingResponse.getImage().size() : 0,
+                        embeddingResponse.getText() != null ? embeddingResponse.getText().size() : 0);
+                
+                postLostEmbeddingService.saveEmbedding(
+                        postLost,
+                        embeddingResponse.imageEmbeddingToArray(), // 이미지 임베딩 벡터
+                        embeddingResponse.textEmbeddingToArray()   // 텍스트 임베딩 벡터
+                );
+                postLost.updateDogInfo(String.join("\n", embeddingResponse.getSentences()));
+                log.info("[{} 임베딩 저장 완료] PostLost ID: {}, 실행 시간: {}ms", 
+                        imageType, postLost.getId(), System.currentTimeMillis() - startTime);
+            } else {
+                log.warn("[{} 임베딩 생성 실패] embeddingResponse가 null입니다. PostLost ID: {}", imageType, postLost.getId());
+            }
+        } catch (Exception e) {
+            log.error("[{} 임베딩 생성 중 예외 발생] PostLost ID: {}, error: {}", 
+                    imageType, postLost.getId(), e.getMessage(), e);
+            throw e;
         }
     }
 
