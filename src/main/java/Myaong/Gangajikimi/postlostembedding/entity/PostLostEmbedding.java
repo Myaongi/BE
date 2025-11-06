@@ -19,11 +19,11 @@ public class PostLostEmbedding extends BaseEntity {
     private PostLost postLost;
 
     @JdbcTypeCode(SqlTypes.VECTOR)
-    @Column(columnDefinition = "vector(512)")
+    @Column(columnDefinition = "vector(768)")
     private float[] imageEmbedding;
 
     @JdbcTypeCode(SqlTypes.VECTOR)
-    @Column(columnDefinition = "vector(512)")
+    @Column(columnDefinition = "vector(768)")
     private float[] textEmbedding;
 
     @Builder

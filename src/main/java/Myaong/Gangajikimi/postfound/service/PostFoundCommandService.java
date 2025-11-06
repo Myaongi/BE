@@ -56,8 +56,14 @@ public class PostFoundCommandService {
         log.info("[PostFound 작성 시작] Member : {}", member.getMemberName());
 
         // 실제 이미지와 AI 이미지 중 하나는 무조건 들어옴 (프론트엔드에서 보장)
-        boolean hasRealImages = (images != null && !images.isEmpty());
-        boolean hasAiImage = (aiImage != null && !aiImage.isEmpty());
+        boolean hasRealImages = (images != null && !images.isEmpty()) &&
+                images.stream().anyMatch(img -> img != null && !img.isEmpty() && img.getSize() > 0);
+        boolean hasAiImage = (aiImage != null && !aiImage.isEmpty() && aiImage.getSize() > 0);
+        
+        log.info("[이미지 검증] hasRealImages: {}, hasAiImage: {}, images size: {}, aiImage size: {}",
+                hasRealImages, hasAiImage,
+                (images != null ? images.size() : 0),
+                (aiImage != null ? aiImage.getSize() : 0));
 
         String processedDogType = request.getDogType();
 
@@ -156,6 +162,11 @@ public class PostFoundCommandService {
 
         } else {
             // 이 경우는 발생하지 않아야 함 (프론트엔드에서 보장)
+            log.error("[이미지 검증 실패] images: {}, aiImage: {}, images null: {}, aiImage null: {}",
+                    (images != null ? images.size() : "null"),
+                    (aiImage != null ? aiImage.getSize() : "null"),
+                    (images == null),
+                    (aiImage == null));
             throw new GeneralException(ErrorCode.NO_IMAGE);
         }
 
