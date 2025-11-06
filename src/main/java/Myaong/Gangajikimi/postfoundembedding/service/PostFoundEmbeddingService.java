@@ -18,9 +18,9 @@ public class PostFoundEmbeddingService {
     /**
      * PostFound 임베딩 저장
      * @param postFound 게시글
-     * @param imageEmbedding 이미지 임베딩 (512차원)
-     * @param textEmbedding 텍스트 임베딩 (512차원)
-     * @return 저장된 PostLostEmbedding
+     * @param imageEmbedding 이미지 임베딩 (768차원)
+     * @param textEmbedding 텍스트 임베딩 (768차원)
+     * @return 저장된 PostFoundEmbedding
      */
     @Transactional
     public PostFoundEmbedding saveEmbedding(PostFound postFound, float[] imageEmbedding, float[] textEmbedding) {
