@@ -96,6 +96,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 			Long opponentPostId;
 			PostType opponentType;
 			String title, region, dogType, dogColor;
+			String image; // 이미지
 			String timeAgo = null; // 필요 없으면 제거
 
 			if (iAmLostOwner) {
@@ -106,6 +107,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 				dogType = (found.getDogType() != null) ? found.getDogType().getType() : null;
 				dogColor = found.getDogColor();
 				timeAgo  = TimeUtil.getTimeAgo(found.getFoundTime());
+				image = pickImage(found);
 			} else { // iAmFoundOwner
 				opponentPostId = lost.getId();
 				opponentType   = PostType.LOST;
@@ -114,6 +116,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 				dogType = (lost.getDogType() != null) ? lost.getDogType().getType() : null;
 				dogColor = lost.getDogColor();
 				timeAgo  = TimeUtil.getTimeAgo(lost.getLostTime());
+				image    = pickImage(lost);
 			}
 
 			// 2-3) 응답을 서비스에서 직접 빌드(컨버터 손 안 댐)
@@ -131,6 +134,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 					.opponentDogType(dogType)
 					.opponentDogColor(dogColor)
 					.opponentTimeAgo(timeAgo)
+					.opponentImage(image)
 					.build();
 		}
 
@@ -206,7 +210,9 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 							.opponentRegion(found.getFoundRegion())
 							.opponentDogType(found.getDogType()!=null?found.getDogType().getType():null)
 							.opponentDogColor(found.getDogColor())
-							.opponentTimeAgo(TimeUtil.getTimeAgo(found.getFoundTime()));
+							.opponentTimeAgo(TimeUtil.getTimeAgo(found.getFoundTime()))
+							.opponentImage(pickImage(found))
+							.dogName(lost.getDogName()); // dogName 반환
 				} else {            // 내가 FOUND 주인 → 상대 LOST 카드
 					b.matchingRatio(ratio)
 							.opponentPostId(lost.getId())
@@ -215,12 +221,35 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 							.opponentRegion(lost.getLostRegion())
 							.opponentDogType(lost.getDogType()!=null?lost.getDogType().getType():null)
 							.opponentDogColor(lost.getDogColor())
-							.opponentTimeAgo(TimeUtil.getTimeAgo(lost.getLostTime()));
+							.opponentTimeAgo(TimeUtil.getTimeAgo(lost.getLostTime()))
+							.opponentImage(pickImage(lost));
 				}
 			}
 		}
 
 		return b.build();
+	}
+
+	private String pickImage(PostFound found) {
+		if (found.getAiImage() != null && !found.getAiImage().isBlank()) {
+			return found.getAiImage();
+		}
+		var real = found.getRealImage();
+		if (real != null && !real.isEmpty() && real.get(0) != null && !real.get(0).isBlank()) {
+			return real.get(0);
+		}
+		return null;
+	}
+
+	private String pickImage(PostLost lost) {
+		if (lost.getAiImage() != null && !lost.getAiImage().isBlank()) {
+			return lost.getAiImage();
+		}
+		var real = lost.getRealImage();
+		if (real != null && !real.isEmpty() && real.get(0) != null && !real.get(0).isBlank()) {
+			return real.get(0);
+		}
+		return null;
 	}
 
 

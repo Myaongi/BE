@@ -25,4 +25,6 @@ public class ChatRoomResponse {
 	private String     opponentDogType;
 	private String     opponentDogColor;
 	private String     opponentTimeAgo; // "3분 전" 등 (선택)
+	private String 	   opponentImage;
+	private String     dogName;
 }
