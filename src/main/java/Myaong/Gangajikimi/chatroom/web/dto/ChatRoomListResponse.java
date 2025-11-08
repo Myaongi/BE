@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.chatroom.web.dto;
 
 import java.time.LocalDateTime;
 
+import Myaong.Gangajikimi.common.enums.ChatContext;
 import Myaong.Gangajikimi.common.enums.PostType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,7 @@ public class ChatRoomListResponse {
 	private String postImageUrl;
 	private String postRegion;
 	private LocalDateTime postUserTime;
+	private ChatContext chatContext;
 
 
 }
