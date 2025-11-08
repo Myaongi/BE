@@ -1,15 +1,5 @@
 package Myaong.Gangajikimi.chatroom.web.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
 import Myaong.Gangajikimi.chatroom.service.ChatRoomService;
 import Myaong.Gangajikimi.chatroom.web.dto.ChatRoomCreateRequest;
@@ -22,6 +12,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "ChatRoom", description = "채팅방 API")
 @RestController
@@ -53,6 +48,16 @@ public class ChatRoomController {
 
 		List<ChatRoomListResponse> response = chatRoomService.getChatRooms(memberId);
 		return GlobalResponse.onSuccess(SuccessCode.OK, response);
+	}
+
+	/** 채팅방 매칭 정보 조회(재입장) */
+	@GetMapping("/{chatRoomId}")
+	public ResponseEntity<GlobalResponse> getMatchCard(
+			@AuthenticationPrincipal CustomUserDetails user,
+			@PathVariable Long chatRoomId
+	) {
+		var resp = chatRoomService.getRoomAndMatchCard(chatRoomId, user.getId());
+		return GlobalResponse.onSuccess(SuccessCode.OK, resp);
 	}
 
 	// @Operation(summary = "내 채팅방 삭제(soft delete)", description = "해당 유저의 채팅방 목록에서 채팅방을 삭제합니다.")

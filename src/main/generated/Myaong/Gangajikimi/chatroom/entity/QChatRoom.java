@@ -24,10 +24,14 @@ public class QChatRoom extends EntityPathBase<ChatRoom> {
 
     public final Myaong.Gangajikimi.common.QBaseEntity _super = new Myaong.Gangajikimi.common.QBaseEntity(this);
 
+    public final EnumPath<Myaong.Gangajikimi.common.enums.ChatContext> context = createEnum("context", Myaong.Gangajikimi.common.enums.ChatContext.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final NumberPath<Long> matchedPostId = createNumber("matchedPostId", Long.class);
 
     public final Myaong.Gangajikimi.member.entity.QMember member1;
 
@@ -36,6 +40,8 @@ public class QChatRoom extends EntityPathBase<ChatRoom> {
     public final NumberPath<Long> postId = createNumber("postId", Long.class);
 
     public final EnumPath<Myaong.Gangajikimi.common.enums.PostType> postType = createEnum("postType", Myaong.Gangajikimi.common.enums.PostType.class);
+
+    public final NumberPath<Float> similarity = createNumber("similarity", Float.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
