@@ -1,14 +1,11 @@
 package Myaong.Gangajikimi.chatroom.entity;
 
 import Myaong.Gangajikimi.common.BaseEntity;
+import Myaong.Gangajikimi.common.enums.ChatContext;
 import Myaong.Gangajikimi.common.enums.PostType;
 import Myaong.Gangajikimi.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
@@ -35,4 +32,15 @@ public class ChatRoom extends BaseEntity {
 
     @Column(name = "post_id", nullable = false)
     private Long postId;         // 해당 글 PK
+
+    // ChatRoom
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ChatContext context = ChatContext.NORMAL;
+
+    @Column(name = "matched_post_id")
+    private Long matchedPostId;
+
+    @Column(name = "similarity")
+    private Float similarity;
 }

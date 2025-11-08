@@ -1,13 +1,8 @@
 package Myaong.Gangajikimi.chatroom.web.dto;
 
 import Myaong.Gangajikimi.common.enums.PostType;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -23,5 +18,7 @@ public class ChatRoomCreateRequest {
 
 	@NotNull
 	private Long postId;
+
+	private Long matchingId;
 
 }
