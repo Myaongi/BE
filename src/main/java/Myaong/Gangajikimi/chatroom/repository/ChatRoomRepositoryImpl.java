@@ -111,6 +111,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.postImageUrl(postImageUrl)
 				.postRegion(postRegion)
 				.postUserTime(postUserTime)
+				.chatContext(room.getContext())
 				.build();
 		}).toList();
 	}
