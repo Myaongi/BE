@@ -1,5 +1,6 @@
 package Myaong.Gangajikimi.chatroom.web.dto;
 
+import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.common.enums.PostType;
 import lombok.*;
 
@@ -27,4 +28,5 @@ public class ChatRoomResponse {
 	private String     opponentTimeAgo; // "3분 전" 등 (선택)
 	private String 	   opponentImage;
 	private String     dogName;
+	private DogStatus status;
 }

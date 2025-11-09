@@ -213,7 +213,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 							.opponentDogColor(found.getDogColor())
 							.opponentTimeAgo(TimeUtil.getTimeAgo(found.getFoundTime()))
 							.opponentImage(pickImage(found))
-							.dogName(lost.getDogName()); // dogName 반환
+							.dogName(lost.getDogName()) // dogName 반환
+							.status(found.getStatus());
 				} else {            // 내가 FOUND 주인 → 상대 LOST 카드
 					b.matchingRatio(ratio)
 							.opponentPostId(lost.getId())
@@ -223,7 +224,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 							.opponentDogType(lost.getDogType()!=null?lost.getDogType().getType():null)
 							.opponentDogColor(lost.getDogColor())
 							.opponentTimeAgo(TimeUtil.getTimeAgo(lost.getLostTime()))
-							.opponentImage(pickImage(lost));
+							.opponentImage(pickImage(lost))
+							.status(lost.getStatus());
 				}
 			}
 		}

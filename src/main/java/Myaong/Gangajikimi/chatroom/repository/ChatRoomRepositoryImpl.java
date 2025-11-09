@@ -10,6 +10,7 @@ import Myaong.Gangajikimi.chatmessage.entity.ChatMessage;
 import Myaong.Gangajikimi.chatroom.entity.ChatRoom;
 import Myaong.Gangajikimi.chatroom.entity.QChatRoom;
 import Myaong.Gangajikimi.chatroom.web.dto.ChatRoomListResponse;
+import Myaong.Gangajikimi.common.enums.DogStatus;
 import Myaong.Gangajikimi.common.enums.PostType;
 import Myaong.Gangajikimi.member.entity.Member;
 
@@ -65,6 +66,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 			String postImageUrl = null;
 			String postRegion = null;
 			LocalDateTime postUserTime = null;
+			DogStatus dogStatus = null;
 
 			if (room.getPostType() == PostType.LOST) {
 				var lost = queryFactory.selectFrom(qLost)
@@ -80,6 +82,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 					}
 					postRegion = lost.getLostRegion();
 					postUserTime = lost.getLostTime();
+					dogStatus = lost.getStatus();
 				}
 			} else {
 				var found = queryFactory.selectFrom(qFound)
@@ -95,6 +98,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 					}
 					postRegion = found.getFoundRegion();
 					postUserTime = found.getFoundTime();
+					dogStatus = found.getStatus();
 				}
 			}
 
@@ -112,6 +116,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
 				.postRegion(postRegion)
 				.postUserTime(postUserTime)
 				.chatContext(room.getContext())
+				.status(dogStatus)
 				.build();
 		}).toList();
 	}
