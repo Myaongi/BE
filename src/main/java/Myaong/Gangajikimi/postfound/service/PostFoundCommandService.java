@@ -21,6 +21,7 @@ import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundUpdateRequest;
 import Myaong.Gangajikimi.postfoundembedding.service.PostFoundEmbeddingService;
 import Myaong.Gangajikimi.s3file.service.S3Service;
 import Myaong.Gangajikimi.kakaoapi.service.KakaoApiService;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -326,7 +327,7 @@ public class PostFoundCommandService {
     /**
      * 여러 PostFound 게시글의 DogStatus를 일괄 업데이트
      */
-    @jakarta.transaction.Transactional
+    @Transactional
     public List<DogStatusUpdateResponse> updatePostFoundStatuses(
             List<Long> postFoundIds, Member member, DogStatus dogStatus) {
         
@@ -335,15 +336,7 @@ public class PostFoundCommandService {
         for (Long postFoundId : postFoundIds) {
             PostFound postFound = postFoundRepository.findById(postFoundId)
                     .orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
-            
-            // 권한 확인 - 본인만 상태 변경 가능 (관리자 제외)
-            boolean isOwner = member.equals(postFound.getMember());
-            boolean isAdmin = member.getRole() == Role.ADMIN;
-            
-            if (!isOwner && !isAdmin) {
-                throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
-            }
-            
+
             // 상태 업데이트
             postFound.updateStatus(dogStatus);
             

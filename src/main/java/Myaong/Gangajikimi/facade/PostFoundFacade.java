@@ -13,7 +13,7 @@ import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundUpdateRequest;
 import Myaong.Gangajikimi.postfound.web.dto.response.PostFoundResponse;
 import Myaong.Gangajikimi.postfound.web.dto.response.PostFoundDetailResponse;
 import Myaong.Gangajikimi.templocation.service.TempLocationService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
