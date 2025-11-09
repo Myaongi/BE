@@ -152,6 +152,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 					.member2(m2)
 					.postType(req.getPostType())
 					.postId(req.getPostId())
+					.context(ChatContext.NORMAL)
 					.build();
 
 				return converter.toResponse(chatRoomRepository.save(newRoom));
