@@ -55,9 +55,9 @@ public class MatchingPostService {
     private final MatchingPostRepository matchingPostRepository;
 
     // km/h - 평균 이동 속도 (연구 기반: 6km/day = 0.25km/h)
-    private static final double V_AVG = 0.25;
+    private static final double V_AVG = 10.0;//0.25;
     // km - 최대 탐색 반경 (현실적 한계)
-    private static final double R_MAX = 10.0;
+    private static final double R_MAX = 50.0;// R_MAX = 10.0;
     // km - 초기 집중 반경 (UX 가이드용, 70% 발견 거리)
     private static final double R_INITIAL = 1.6;
     // h - 최대 유효 탐색 시간 (5일, 90% 회수율)
