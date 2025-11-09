@@ -27,6 +27,7 @@ import Myaong.Gangajikimi.postlostembedding.entity.PostLostEmbedding;
 import Myaong.Gangajikimi.postlostembedding.service.PostLostEmbeddingService;
 import Myaong.Gangajikimi.s3file.service.S3Service;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class MatchingPostService {
 
     private final PostLostQueryService postLostQueryService;
@@ -73,6 +75,7 @@ public class MatchingPostService {
 
         // 2) 후보 발견했어요 각각에 대해 유사도 계산 → 매칭 엔티티 생성 → 저장
         List<MatchingPost> result = postFounds.stream()
+                .filter(foundPost -> matchingPostRepository.findByPostLostAndPostFound(postLost, foundPost).isEmpty())
                 .map(foundPost -> {
                     PostFoundEmbedding postFoundEmbedding = postFoundEmbeddingService.findPostFoundEmbeddingByPostFound(foundPost);
                     double score = aiService
@@ -105,6 +108,7 @@ public class MatchingPostService {
 
         // 2) 후보 습득글 각각에 대해 유사도 계산 → 매칭 엔티티 생성 → 저장
         List<MatchingPost> result = postLosts.stream()
+                .filter(post -> matchingPostRepository.findByPostLostAndPostFound(post, postFound).isEmpty())
                 .map(post -> {
                     PostLostEmbedding postLostEmbedding = postLostEmbeddingService.findPostLostEmbeddingByPostLost(post);
                     double score = aiService
@@ -116,7 +120,7 @@ public class MatchingPostService {
                             )
                             .getScore();
 
-                    return MatchingPost.of(post, postFound, (float) score);
+                    return MatchingPost.of(post, postFound, (float) (score * 100f));
                 })
                 .map(matchingPostRepository::save)
                 .toList();
@@ -398,53 +402,53 @@ public class MatchingPostService {
         if (!postLost.getMember().getId().equals(memberId)) {
             throw new GeneralException(ErrorCode.INVALID_ACCESS);
         }
-        
+
         // 3. 해당 PostLost와 연결된 모든 MatchingPost 조회
         List<MatchingPost> allMatchingPosts = matchingPostRepository.findAllByPostLost(postLost);
-        
+
+        log.info("매칭된 게시글: {}", allMatchingPosts.size());
+
         // 4. 채팅 기록이 있는 MatchingPost만 필터링
-        List<MatchingPost> matchingPostsWithChat = allMatchingPosts.stream()
-                .filter(matchingPost -> {
-                    PostFound postFound = matchingPost.getPostFound();
-                    Long postFoundId = postFound.getId();
-                    
-                    // PostFound 게시글과 PostLost 게시글의 작성자 찾기
-                    Long postFoundMemberId = postFound.getMember().getId();
-                    Long postLostMemberId = postLost.getMember().getId();
-                    
-                    // ChatRoom이 존재하는지 확인 (postType=FOUND, postId=postFoundId, 두 회원 간)
-                    List<ChatRoom> chatRooms = chatRoomRepository.findAll().stream()
-                            .filter(room -> room.getPostType() == PostType.FOUND
-                                    && room.getPostId().equals(postFoundId)
-                                    && ((room.getMember1().getId().equals(postFoundMemberId) 
-                                            && room.getMember2().getId().equals(postLostMemberId))
-                                        || (room.getMember1().getId().equals(postLostMemberId) 
-                                            && room.getMember2().getId().equals(postFoundMemberId))))
-                            .toList();
-                    
-                    // ChatRoom이 있고, 그 ChatRoom에 ChatMessage가 있는지 확인
-                    return chatRooms.stream()
-                            .anyMatch(room -> !chatMessageRepository.findByChatRoomId(room.getId(), 
-                                    org.springframework.data.domain.Pageable.unpaged()).isEmpty());
-                })
+        List<ChatRoom> chatRoomsForPostLost = chatRoomRepository.findAll().stream()
+                .filter(room ->
+                        (room.getMatchedPostId() != null && room.getMatchedPostId().equals(postLostId))
+                                || room.getPostId().equals(postLostId))
                 .toList();
-        
+        log.info("필터링 된 목록: {}", chatRoomsForPostLost.size());
+
+        List<Long> chatRoomIdsForPostLost = chatRoomsForPostLost.stream()
+                .map(ChatRoom::getId)
+                .toList();
+
+        boolean hasChatRooms = !chatRoomIdsForPostLost.isEmpty();
+        boolean hasChatMessages = chatRoomIdsForPostLost.stream()
+                .anyMatch(roomId -> !chatMessageRepository.findByChatRoomId(
+                        roomId,
+                        org.springframework.data.domain.Pageable.unpaged()).isEmpty());
+
+        List<MatchingPost> matchingPostsWithChat = allMatchingPosts.stream()
+                .filter(matchingPost -> hasChatRooms)
+                .filter(matchingPost -> hasChatMessages)
+                .toList();
+
         // 5. 페이지네이션 처리
         int fromIndex = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
         int toIndex = Math.min(matchingPostsWithChat.size(), fromIndex + pageable.getPageSize());
         if (fromIndex > toIndex) {
             fromIndex = toIndex;
         }
-        
+
         List<MatchingPost> pageSlice = matchingPostsWithChat.subList(fromIndex, toIndex);
-        
+
+        log.info("필터링된 게시글: {}", pageSlice.size());
+
         // 6. Response로 변환
         List<MatchingResultResponse> content = pageSlice.stream()
                 .map(matching -> {
                     PostFound postFound = matching.getPostFound();
                     String dogType = postFound.getDogType() != null ? postFound.getDogType().getType() : null;
                     String location = postFound.getFoundRegion();
-                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() * 100f : 0f;
+                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() : 0f;
                     String image = postFound.getAiImage() != null ? s3Service.generatePresignedUrl(postFound.getAiImage())
                             : (postFound.getRealImage() != null && !postFound.getRealImage().isEmpty()
                                 ? s3Service.generatePresignedUrl(postFound.getRealImage().get(0))
@@ -483,6 +487,7 @@ public class MatchingPostService {
      */
     @Transactional(readOnly = true)
     public PageResponse getMatchingPostsWithChatByPostFound(Long postFoundId, Integer page, Integer size, Long memberId) {
+
         Pageable pageable = Pageable.ofSize(size).withPage(page);
         
         // 1. PostFound 조회
@@ -538,7 +543,7 @@ public class MatchingPostService {
                     PostLost postLost = matching.getPostLost();
                     String dogType = postLost.getDogType() != null ? postLost.getDogType().getType() : null;
                     String location = postLost.getLostRegion();
-                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() * 100f : 0f;
+                    float similarity = matching.getMatchingRatio() != null ? matching.getMatchingRatio() : 0f;
                     String image = postLost.getAiImage() != null ? s3Service.generatePresignedUrl(postLost.getAiImage())
                             : (postLost.getRealImage() != null && !postLost.getRealImage().isEmpty()
                                 ? s3Service.generatePresignedUrl(postLost.getRealImage().get(0))
