@@ -63,6 +63,8 @@ public class MatchingPostService {
     // h - 최대 유효 탐색 시간 (5일, 90% 회수율)
     private static final double T_MAX = 120.0;
 
+    private static final float MATCHING_RATIO_THRESHOLD = 80f;
+
     /**
      * 매칭하고 결과를 저장까지만 한다.
      */
@@ -223,15 +225,17 @@ public class MatchingPostService {
             throw new GeneralException(ErrorCode.INVALID_ACCESS);
         }
 
-        List<MatchingPost> allMatches = matchingPostRepository.findAllByPostLost(postLost);
+        List<MatchingPost> filteredMatches = matchingPostRepository.findAllByPostLost(postLost).stream()
+                .filter(match -> match.getMatchingRatio() != null && match.getMatchingRatio() >= MATCHING_RATIO_THRESHOLD)
+                .toList();
 
         int fromIndex = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
-        int toIndex = Math.min(allMatches.size(), fromIndex + pageable.getPageSize());
+        int toIndex = Math.min(filteredMatches.size(), fromIndex + pageable.getPageSize());
         if (fromIndex > toIndex) {
             fromIndex = toIndex;
         }
 
-        List<MatchingPost> pageSlice = allMatches.subList(fromIndex, toIndex);
+        List<MatchingPost> pageSlice = filteredMatches.subList(fromIndex, toIndex);
 
         List<MatchingResultResponse> content = pageSlice.stream()
                 .map(matching -> {
@@ -266,7 +270,7 @@ public class MatchingPostService {
                 })
                 .toList();
 
-        boolean hasNext = toIndex < allMatches.size();
+        boolean hasNext = toIndex < filteredMatches.size();
 
         return PostLostMatchingResultResponse.of(postLost.getDogName(), PageResponse.of(content, hasNext));
     }
@@ -281,15 +285,17 @@ public class MatchingPostService {
             throw new GeneralException(ErrorCode.INVALID_ACCESS);
         }
 
-        List<MatchingPost> allMatches = matchingPostRepository.findAllByPostFound(postFound);
+        List<MatchingPost> filteredMatches = matchingPostRepository.findAllByPostFound(postFound).stream()
+                .filter(match -> match.getMatchingRatio() != null && match.getMatchingRatio() >= MATCHING_RATIO_THRESHOLD)
+                .toList();
 
         int fromIndex = Math.max(0, pageable.getPageNumber() * pageable.getPageSize());
-        int toIndex = Math.min(allMatches.size(), fromIndex + pageable.getPageSize());
+        int toIndex = Math.min(filteredMatches.size(), fromIndex + pageable.getPageSize());
         if (fromIndex > toIndex) {
             fromIndex = toIndex;
         }
 
-        List<MatchingPost> pageSlice = allMatches.subList(fromIndex, toIndex);
+        List<MatchingPost> pageSlice = filteredMatches.subList(fromIndex, toIndex);
 
         List<MatchingResultResponse> content = pageSlice.stream()
                 .map(matching -> {
@@ -324,7 +330,7 @@ public class MatchingPostService {
                 })
                 .toList();
 
-        boolean hasNext = toIndex < allMatches.size();
+        boolean hasNext = toIndex < filteredMatches.size();
 
         return PageResponse.of(content, hasNext);
     }
