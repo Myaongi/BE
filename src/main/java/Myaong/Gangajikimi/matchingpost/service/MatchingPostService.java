@@ -384,12 +384,16 @@ public class MatchingPostService {
         
         // 3. 각 PostLost에 대한 MatchingPost 개수 합산
         long lostMatchingCount = postLosts.stream()
-                .mapToLong(postLost -> matchingPostRepository.findAllByPostLost(postLost).size())
+                .mapToLong(postLost -> matchingPostRepository.findAllByPostLost(postLost).stream()
+                        .filter(match -> match.getMatchingRatio() != null && match.getMatchingRatio() >= MATCHING_RATIO_THRESHOLD)
+                        .count())
                 .sum();
         
         // 4. 각 PostFound에 대한 MatchingPost 개수 합산
         long foundMatchingCount = postFounds.stream()
-                .mapToLong(postFound -> matchingPostRepository.findAllByPostFound(postFound).size())
+                .mapToLong(postFound -> matchingPostRepository.findAllByPostFound(postFound).stream()
+                        .filter(match -> match.getMatchingRatio() != null && match.getMatchingRatio() >= MATCHING_RATIO_THRESHOLD)
+                        .count())
                 .sum();
         
         // 5. 총합 계산
