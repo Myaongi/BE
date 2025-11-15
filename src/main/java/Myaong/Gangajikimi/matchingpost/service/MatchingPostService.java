@@ -162,6 +162,7 @@ public class MatchingPostService {
      */
     private MatchingResponse findMatchingPostFound(Long lostPostId) {
         PostLost lostPost = postLostQueryService.findPostLostById(lostPostId);
+        Long authorId = lostPost.getMember().getId();
 
         // 1. 현재 시각 기준으로 시간 차이 계산하여 동적 반경 결정
         LocalDateTime currentTime = LocalDateTime.now();
@@ -170,8 +171,15 @@ public class MatchingPostService {
         double dynamicRadius = timeDifference * V_AVG;
 
         // 2. 반경 내의 Found Post들을 조회
-        return matchingPosts(lostPost, postFoundQueryService.findWithinInitialRadius(
-                lostPost.getLostSpot(), dynamicRadius));
+        List<PostFound> foundPosts = postFoundQueryService.findWithinInitialRadius(
+                lostPost.getLostSpot(), dynamicRadius);
+
+        // 3. 동일 작성자 게시글 필터링
+        List<PostFound> filteredFoundPosts = foundPosts.stream()
+                .filter(foundPost -> !foundPost.getMember().getId().equals(authorId))
+                .toList();
+
+        return matchingPosts(lostPost, filteredFoundPosts);
     }
 
 
@@ -182,17 +190,19 @@ public class MatchingPostService {
     private MatchingResponse findMatchingPostLost(Long foundPostId) {
 
         PostFound foundPost = postFoundQueryService.findPostFoundById(foundPostId);
+        Long authorId = foundPost.getMember().getId();
 
-        // 1. 최대 탐색 반경(10km) 내의 모든 Lost Post들을 조회
+        // 1. 최대 탐색 반경(R_MAX) 내의 모든 Lost Post들을 조회
         List<PostLost> candidateLostPosts = postLostQueryService.findWithinInitialRadius(
                 foundPost.getFoundSpot(), R_MAX);
 
-        // 2. 후보 게시글들의 타당성 검증 후 반환
+        // 2. 동일 작성자 게시글 필터링
+        List<PostLost> filteredLostPosts = candidateLostPosts.stream()
+                .filter(lostPost -> !lostPost.getMember().getId().equals(authorId))
+                .toList();
 
         // 3. 후보 리스트 반환
-        return matchingPosts(foundPost, postLostQueryService.findWithinInitialRadius(
-                foundPost.getFoundSpot(), R_MAX
-        ));
+        return matchingPosts(foundPost, filteredLostPosts);
     }
 
     /**
