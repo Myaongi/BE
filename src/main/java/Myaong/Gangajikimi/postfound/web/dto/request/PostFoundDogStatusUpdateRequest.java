@@ -4,6 +4,8 @@ import Myaong.Gangajikimi.common.enums.DogStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +13,8 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Schema(description = "발견했어요 게시글 강아지 상태 업데이트 요청 DTO")
 public class PostFoundDogStatusUpdateRequest {
 
@@ -21,10 +25,5 @@ public class PostFoundDogStatusUpdateRequest {
     @NotNull(message = "강아지 상태는 필수입니다")
     @Schema(description = "강아지 상태", example = "RETURNED", allowableValues = {"MISSING", "SIGHTED", "RETURNED"})
     private DogStatus dogStatus;
-
-    public PostFoundDogStatusUpdateRequest(List<Long> postFoundIds, DogStatus dogStatus) {
-        this.postFoundIds = postFoundIds;
-        this.dogStatus = dogStatus;
-    }
 }
 
