@@ -369,14 +369,6 @@ public class PostLostCommandService {
             PostLost postLost = postLostRepository.findById(postLostId)
                     .orElseThrow(() -> new GeneralException(ErrorCode.POST_NOT_FOUND));
             
-            // 권한 확인 - 본인만 상태 변경 가능 (관리자 제외)
-            boolean isOwner = member.equals(postLost.getMember());
-            boolean isAdmin = member.getRole() == Role.ADMIN;
-            
-            if (!isOwner && !isAdmin) {
-                throw new GeneralException(ErrorCode.UNAUTHORIZED_UPDATING);
-            }
-            
             // 상태 업데이트
             postLost.updateStatus(dogStatus);
             

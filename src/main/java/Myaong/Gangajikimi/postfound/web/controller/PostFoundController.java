@@ -2,6 +2,7 @@ package Myaong.Gangajikimi.postfound.web.controller;
 
 import Myaong.Gangajikimi.auth.userDetails.CustomUserDetails;
 import Myaong.Gangajikimi.common.dto.request.FilterRequest;
+import Myaong.Gangajikimi.common.dto.response.DogStatusUpdateResponse;
 import Myaong.Gangajikimi.postfound.web.dto.request.PostFoundDogStatusUpdateRequest;
 import Myaong.Gangajikimi.common.dto.response.PageResponse;
 import Myaong.Gangajikimi.common.enums.SortType;
@@ -138,7 +139,7 @@ public class PostFoundController implements PostFoundControllerDocs {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         Long memberId = userDetails.getId();
-        var response = postFoundFacade.updatePostFoundStatuses(request, memberId);
+        List<DogStatusUpdateResponse> response = postFoundFacade.updatePostFoundStatuses(request, memberId);
 
         return GlobalResponse.onSuccess(SuccessCode.OK, response);
     }

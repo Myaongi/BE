@@ -351,7 +351,9 @@ public class PostFoundCommandService {
                 postFound.getUpdatedAt()
             ));
         }
-        
+
+        log.info("게시글 상태 변경 완료");
+
         return responses;
     }
 
