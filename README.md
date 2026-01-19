@@ -1,5 +1,11 @@
 # 코드 컨벤션 설정
 
+### 📘시스템 아키텍처
+
+<img width="1351" height="540" alt="image" src="https://github.com/user-attachments/assets/05280bf4-0428-456c-8211-79cf5fbc1369" />
+
+
+
 ### 📦 기본 응답 통일
 
 - `BaseResponse<T>` 사용 (code, message, data 포함)
@@ -9,11 +15,6 @@
 
 - `ExceptionAdvice` 클래스: 전역 예외 처리
 - `GeneralException` 기반 계층적 예외 처리
-
-### 📘 Swagger 설정
-
-- `SwaggerConfig` 사용
-- 개발 중 Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 ---
 # Git branch 전략 수립
